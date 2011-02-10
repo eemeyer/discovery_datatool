@@ -50,12 +50,14 @@ public class SqlChangesetExtractor
     {
       callbackHandler =
           new CreateActionRowCallbackHandler(
+            jdbcTemplate,
             writer,
             sqlAction.getIdColumn(),
             sqlAction.getIdPrefix(),
             sqlAction.getIdSuffix(),
             sqlAction.isUseLowerCaseColumnNames(),
-            sqlAction.getJsonColumnNames());
+            sqlAction.getJsonColumnNames(),
+            sqlAction.getSubqueries());
     }
     else if ("delete".equals(sqlAction.getAction()))
     {

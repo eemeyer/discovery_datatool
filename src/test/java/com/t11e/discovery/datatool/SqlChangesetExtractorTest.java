@@ -3,6 +3,7 @@ package com.t11e.discovery.datatool;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.sql.DataSource;
@@ -188,6 +189,47 @@ public class SqlChangesetExtractorTest
       }
     });
     testExtractor(writer, "datetime_column_test");
+  }
+
+  @Test
+  public void testSubQueries()
+    throws XMLStreamException
+  {
+    final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
+    extractor.setDataSource(dataSource);
+    {
+      final SqlAction action = new SqlAction();
+      action.setAction("create");
+      action.setIdColumn("id");
+      action.setQuery("select * from subquery_test");
+      action.setSubqueries(Arrays.asList(new SubQuery(SubQuery.Type.DELIMITED,
+        "select name from subquery_joined_test where parent_id=:id", "fish", ",")));
+      extractor.setActions(CollectionsFactory.makeList(
+        action));
+    }
+    final ChangesetWriter writer = mockery.mock(ChangesetWriter.class);
+    mockery.checking(new Expectations()
+    {
+      {
+        never(writer);
+        oneOf(writer).setItem(
+          "1",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "1",
+            "fish", "redfish,bluefish"));
+        oneOf(writer).setItem(
+          "2",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "2"));
+        oneOf(writer).setItem(
+          "3",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "3",
+            "fish", "onefish,twofish"));
+      }
+    });
+    extractor.writeChangeset(writer, "snapshot", null, null);
+    mockery.assertIsSatisfied();
   }
 
   private void testExtractor(

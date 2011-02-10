@@ -1,9 +1,10 @@
 package com.t11e.discovery.datatool;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,14 +12,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.RowCallbackHandler;
-
-import com.t11e.discovery.datatool.column.BooleanColumnProcessor;
-import com.t11e.discovery.datatool.column.DateColumnProcessor;
-import com.t11e.discovery.datatool.column.IColumnProcessor;
-import com.t11e.discovery.datatool.column.JsonColumnProcessor;
-import com.t11e.discovery.datatool.column.StringColumnProcessor;
-import com.t11e.discovery.datatool.column.TimeColumnProcessor;
-import com.t11e.discovery.datatool.column.TimestampColumnProcessor;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 public class CreateActionRowCallbackHandler
   implements RowCallbackHandler
@@ -27,36 +21,62 @@ public class CreateActionRowCallbackHandler
   private final String idColumn;
   private final String idPrefix;
   private final String idSuffix;
-  private final boolean lowerCaseColumnNames;
-  private final Set<String> jsonColumns;
-  // Lazily initialized fields
-  private ResultSetMetaData metadata;
-  private IColumnProcessor[] columnProcessors;
+  private final List<SubQuery> subqueries;
+  private final NamedParameterJdbcOperations jdbcTemplate;
+  private final ResultSetConvertor resultSetConvertor;
+  private final List<ResultSetConvertor> subqueryConvertors;
 
   public CreateActionRowCallbackHandler(
+    final NamedParameterJdbcOperations jdbcTemplate,
     final ChangesetWriter writer,
     final String idColumn,
     final String idPrefix,
     final String idSuffix,
     final boolean lowerCaseColumnNames,
-    final Set<String> jsonColumns)
+    final Set<String> jsonColumns,
+    final List<SubQuery> subqueries)
   {
-    super();
+    this.jdbcTemplate = jdbcTemplate;
     this.writer = writer;
     this.idColumn = idColumn;
     this.idPrefix = idPrefix;
     this.idSuffix = idSuffix;
-    this.lowerCaseColumnNames = lowerCaseColumnNames;
-    this.jsonColumns = jsonColumns;
+    this.subqueries = subqueries != null ? subqueries : Collections.<SubQuery> emptyList();
+    resultSetConvertor = new ResultSetConvertor(lowerCaseColumnNames, jsonColumns);
+    if (this.subqueries.isEmpty())
+    {
+      subqueryConvertors = Collections.emptyList();
+    }
+    else
+    {
+      subqueryConvertors = new ArrayList<ResultSetConvertor>(this.subqueries.size());
+      for (int i = 0; i < this.subqueries.size(); ++i)
+      {
+        subqueryConvertors.add(new ResultSetConvertor(lowerCaseColumnNames, Collections.<String> emptySet()));
+      }
+    }
   }
 
   @Override
   public void processRow(final ResultSet rs)
     throws SQLException
   {
-    lazyInitialize(rs);
     final String id = getId(rs);
-    final Map<String, Object> properties = getProperties(rs);
+    final Map<String, Object> properties = resultSetConvertor.getRowAsMap(rs);
+    for (int i = 0; i < subqueries.size(); ++i)
+    {
+      final SubQuery subquery = subqueries.get(i);
+      final List<String> values = new ArrayList<String>();
+      jdbcTemplate.query(subquery.getQuery(), properties,
+        new SubqueryRowCallbackHandler(values, subquery, subqueryConvertors.get(i)));
+      if (!values.isEmpty())
+      {
+        final Object value = SubQuery.Type.DELIMITED.equals(subquery.getType())
+          ? StringUtils.join(values, subquery.getDelimiter())
+          : values;
+        properties.put(subquery.getField(), value);
+      }
+    }
     try
     {
       writer.setItem(id, properties);
@@ -87,117 +107,32 @@ public class CreateActionRowCallbackHandler
     return id;
   }
 
-  private Map<String, Object> getProperties(final ResultSet rs)
-    throws SQLException
+  private static final class SubqueryRowCallbackHandler
+    implements RowCallbackHandler
   {
-    final Map<String, Object> properties;
-    properties = new LinkedHashMap<String, Object>();
-    for (int column = 1; column < columnProcessors.length; column++)
+    private final List<String> values;
+    private final SubQuery subquery;
+    private final ResultSetConvertor convertor;
+
+    private SubqueryRowCallbackHandler(final List<String> values, final SubQuery subquery,
+      final ResultSetConvertor convertor)
     {
-      final IColumnProcessor columnProcessor = columnProcessors[column];
-      if (columnProcessor != null)
+      this.values = values;
+      this.subquery = subquery;
+      this.convertor = convertor;
+    }
+
+    @Override
+    public void processRow(final ResultSet rs)
+      throws SQLException
+    {
+      final Map<String, Object> row = convertor.getRowAsMap(rs);
+      if (row.size() != 1)
       {
-        String name = metadata.getColumnName(column);
-        if (lowerCaseColumnNames)
-        {
-          name = name.toLowerCase();
-        }
-        final Object value = columnProcessor.processColumn(rs, column);
-        if (value != null)
-        {
-          properties.put(name, value);
-        }
+        throw new RuntimeException("Subquery returned more than one column. "
+          + StringUtils.trimToEmpty(subquery.getQuery()));
       }
+      values.add((String) row.entrySet().iterator().next().getValue());
     }
-    return properties;
-  }
-
-  private void lazyInitialize(final ResultSet rs)
-    throws SQLException
-  {
-    if (metadata == null)
-    {
-      metadata = rs.getMetaData();
-      columnProcessors = getColumnProcessors(metadata);
-    }
-  }
-
-  private IColumnProcessor[] getColumnProcessors(
-    final ResultSetMetaData md)
-    throws SQLException
-  {
-    final IColumnProcessor[] output = new IColumnProcessor[md.getColumnCount() + 1];
-    for (int column = 1; column < output.length; column++)
-    {
-      output[column] = getColumnProcessor(md, column);
-    }
-    return output;
-  }
-
-  private IColumnProcessor getColumnProcessor(
-    final ResultSetMetaData md,
-    final int column)
-    throws SQLException
-  {
-    IColumnProcessor output;
-    switch (md.getColumnType(column))
-    {
-      case java.sql.Types.BIT:
-      case java.sql.Types.BOOLEAN:
-        output = BooleanColumnProcessor.INSTANCE;
-        break;
-      case java.sql.Types.TINYINT:
-      case java.sql.Types.SMALLINT:
-      case java.sql.Types.INTEGER:
-      case java.sql.Types.BIGINT:
-      case java.sql.Types.FLOAT:
-      case java.sql.Types.REAL:
-      case java.sql.Types.DOUBLE:
-      case java.sql.Types.NUMERIC:
-      case java.sql.Types.DECIMAL:
-        output = StringColumnProcessor.INSTANCE;
-        break;
-      case java.sql.Types.CHAR:
-      case java.sql.Types.VARCHAR:
-      case java.sql.Types.LONGVARCHAR:
-      case java.sql.Types.CLOB:
-      {
-        final String columnName = md.getColumnName(column);
-        if (columnName != null && jsonColumns.contains(columnName.toLowerCase()))
-        {
-          output = JsonColumnProcessor.INSTANCE;
-        }
-        else
-        {
-          output = StringColumnProcessor.INSTANCE;
-        }
-        break;
-      }
-      case java.sql.Types.DATE:
-        output = DateColumnProcessor.INSTANCE;
-        break;
-      case java.sql.Types.TIME:
-        output = TimeColumnProcessor.INSTANCE;
-        break;
-      case java.sql.Types.TIMESTAMP:
-        output = TimestampColumnProcessor.INSTANCE;
-        break;
-      case java.sql.Types.BINARY:
-      case java.sql.Types.VARBINARY:
-      case java.sql.Types.LONGVARBINARY:
-      case java.sql.Types.NULL:
-      case java.sql.Types.OTHER:
-      case java.sql.Types.JAVA_OBJECT:
-      case java.sql.Types.DISTINCT:
-      case java.sql.Types.STRUCT:
-      case java.sql.Types.ARRAY:
-      case java.sql.Types.BLOB:
-      case java.sql.Types.REF:
-      case java.sql.Types.DATALINK:
-      default:
-        output = null;
-        break;
-    }
-    return output;
   }
 }

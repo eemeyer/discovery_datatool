@@ -259,6 +259,24 @@ public class ConfigurationManager
             .addPropertyValue("query", StringUtils.trimToEmpty(action.valueOf("c:query/text()".replace("c:", ns))));
           builder.addPropertyValue("idColumn", action.valueOf("@idColumn"));
           builder.addPropertyValue("jsonColumnNames", action.valueOf("@jsonColumnNames"));
+          final List<SubQuery> subqueries = new ArrayList<SubQuery>();
+          for (final Node subquery : (List<Node>) action.selectNodes("c:subquery".replace("c:", ns)))
+          {
+            final String sql = subquery.getText();
+            final String field = subquery.valueOf("@field");
+            String type = subquery.valueOf("@type");
+            if (StringUtils.isBlank(type))
+            {
+              type = SubQuery.Type.ARRAY.name();
+            }
+            String delimiter = subquery.valueOf("@delimiter");
+            if (StringUtils.isBlank(delimiter) && SubQuery.Type.DELIMITED.name().equalsIgnoreCase(type))
+            {
+              delimiter = ",";
+            }
+            subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, delimiter));
+          }
+          builder.addPropertyValue("subqueries", subqueries);
           final String beanName = "SqlAction-" + System.identityHashCode(builder);
           applicationContext.registerBeanDefinition(beanName, builder.getBeanDefinition());
           actions.add(applicationContext.getBean(beanName, SqlAction.class));
@@ -337,7 +355,8 @@ public class ConfigurationManager
     final Map<String, String> namespacesByPrefix = CollectionsFactory.makeMap(
       "c1", "http://transparensee.com/schema/datatool-config-1",
       "c2", "http://transparensee.com/schema/datatool-config-2",
-      "c3", "http://transparensee.com/schema/datatool-config-3");
+      "c3", "http://transparensee.com/schema/datatool-config-3",
+      "c4", "http://transparensee.com/schema/datatool-config-4");
     final Map<String, String> namespacesByUri = MapUtils.invertMap(namespacesByPrefix);
     {
       final DocumentFactory factory = new DocumentFactory();
