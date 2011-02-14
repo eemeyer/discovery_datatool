@@ -1,0 +1,96 @@
+<config
+  xmlns="http://transparensee.com/schema/datatool-config-4"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation=
+    "http://transparensee.com/schema/datatool-config-4
+     http://transparensee.com/schema/datatool-config-4.xsd">
+  <dataSources>
+    <driver name="dataSource"
+      class="org.apache.derby.jdbc.EmbeddedDriver">
+      <url>jdbc:derby:memory:test;create=true</url>
+    </driver>
+  </dataSources>
+
+  <profiles>
+    <sqlProfile name="sqlProfile" dataSource="dataSource">
+      <retrieveSql startColumn="startTime" endColumn="endTime">
+        not used by this test
+      </retrieveSql>
+      <updateSql>
+        not used by this test
+      </updateSql>
+    </sqlProfile>
+  </profiles>
+
+  <publishers>
+    <sqlPublisher name="test-snapshot-varchar" dataSource="dataSource" profile="sqlProfile">
+      <action type="create" filter="snapshot" idColumn="id">
+        <query>
+          select * from SubqueryContent
+        </query>
+        <subquery field="color" type="delimited"><![CDATA[
+          select name from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+        <subquery field="color-default"><![CDATA[
+          select name from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+        <subquery field="color-array" type="array"><![CDATA[
+          select name from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+        <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
+          select name from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+      </action>
+      <action type="delete" filter="snapshot" idColumn="id">
+        <query>
+          select id from SubqueryDeleted
+        </query>
+      </action>
+    </sqlPublisher>
+    <sqlPublisher name="test-snapshot-int" dataSource="dataSource" profile="sqlProfile">
+      <action type="create" filter="snapshot" idColumn="id">
+        <query>
+          select * from SubqueryContent
+        </query>
+        <subquery field="color" type="delimited"><![CDATA[
+          select asnumber from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+      </action>
+      <action type="delete" filter="snapshot" idColumn="id">
+        <query>
+          select id from SubqueryDeleted
+        </query>
+      </action>
+    </sqlPublisher>
+    <sqlPublisher name="test-snapshot-timestamp" dataSource="dataSource" profile="sqlProfile">
+      <action type="create" filter="snapshot" idColumn="id">
+        <query>
+          select * from SubqueryContent
+        </query>
+        <subquery field="color" type="delimited"><![CDATA[
+          select asdate from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+      </action>
+      <action type="delete" filter="snapshot" idColumn="id">
+        <query>
+          select id from SubqueryDeleted
+        </query>
+      </action>
+    </sqlPublisher>
+    <sqlPublisher name="test-snapshot-invalid" dataSource="dataSource" profile="sqlProfile">
+      <action type="create" filter="snapshot" idColumn="id">
+        <query>
+          select * from SubqueryContent
+        </query>
+        <subquery field="color" type="delimited"><![CDATA[
+          select * from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+      </action>
+      <action type="delete" filter="snapshot" idColumn="id">
+        <query>
+          select id from SubqueryDeleted
+        </query>
+      </action>
+    </sqlPublisher>
+  </publishers>
+</config>
