@@ -112,22 +112,31 @@
       <attribute name="endColumn" use="required"/>
     </complexType>
 
-    <complexType name="SqlPublisherType">
-      <sequence minOccurs="1" maxOccurs="unbounded">
-        <element name="action" type="tns:ActionType"/>
-      </sequence>
+    <complexType name="SqlPublisherTypeBase" abstract="true">
       <attribute name="name" type="string" use="required"/>
       <attribute name="dataSource" type="string" use="required"/>
       <attribute name="profile" type="string" use="required"/>
     </complexType>
 
+    <complexType name="SqlPublisherType">
+      <complexContent>
+        <extension base="tns:SqlPublisherTypeBase">
+          <sequence minOccurs="1" maxOccurs="unbounded">
+            <element name="action" type="tns:ActionType"/>
+          </sequence>
+        </extension>
+      </complexContent>
+    </complexType>
+
     <complexType name="CreateItemOnlySqlPublisherType">
-      <sequence minOccurs="1" maxOccurs="unbounded">
-        <element name="action" type="tns:CreateItemOnlyActionType"/>
-      </sequence>
-      <attribute name="name" type="string" use="required"/>
-      <attribute name="dataSource" type="string" use="required"/>
-      <attribute name="profile" type="string" use="required"/>
+      <complexContent>
+        <extension base="tns:SqlPublisherTypeBase">
+          <sequence minOccurs="1" maxOccurs="unbounded">
+            <element name="action" type="tns:CreateItemOnlyActionType"/>
+          </sequence>
+          <attribute name="type" type="tns:CreateItemOnlySqlPublisherTypeType" use="required"/>
+        </extension>
+      </complexContent>
     </complexType>
 
     <complexType name="ActionTypeBase" abstract="true">
@@ -161,7 +170,6 @@
               Each action with a matching filter is run in sequence.
             </documentation>
           </annotation>
-          <attribute name="filter" type="tns:CreateItemOnlyFilterActionType" use="optional"/>
         </extension>
       </complexContent>
     </complexType>
@@ -190,10 +198,11 @@
       </restriction>
     </simpleType>
 
-    <simpleType name="CreateItemOnlyFilterActionType">
+    <simpleType name="CreateItemOnlySqlPublisherTypeType">
       <restriction base="string">
         <enumeration value="bulk"/>
         <enumeration value="full"/>
+        <enumeration value="snapshot"/>
       </restriction>
     </simpleType>
 
