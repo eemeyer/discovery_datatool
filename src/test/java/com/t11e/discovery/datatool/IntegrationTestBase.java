@@ -120,11 +120,11 @@ public abstract class IntegrationTestBase
       changesetController.publish(request, response,
         publisher, null, null, profile, false, forceSnapshot);
     }
-    catch (XMLStreamException e)
+    catch (final XMLStreamException e)
     {
       throw new RuntimeException(e);
     }
-    catch (IOException e)
+    catch (final IOException e)
     {
       throw new RuntimeException(e);
     }
@@ -136,7 +136,7 @@ public abstract class IntegrationTestBase
     {
       doc = parseXmlResponse(response);
     }
-    catch (DocumentException e)
+    catch (final DocumentException e)
     {
       throw new RuntimeException(e);
     }

@@ -246,15 +246,25 @@ public class ConfigurationManager
 
     {
       final List<ChangesetPublisher> publishers = new ArrayList<ChangesetPublisher>();
-      for (final Node node : (List<Node>) document.selectNodes("/c:config/c:publishers/c:sqlPublisher"
+      for (final Node publisherNode : (List<Node>) document
+        .selectNodes("/c:config/c:publishers/c:sqlPublisher|/c:config/c:publishers/c:createItemOnlySqlPublisher"
         .replace("c:", ns)))
       {
+        final String publisher = publisherNode.getName();
         final List<SqlAction> actions = new ArrayList<SqlAction>();
-        for (final Node action : (List<Node>) node.selectNodes("c:action".replace("c:", ns)))
+        for (final Node action : (List<Node>) publisherNode.selectNodes("c:action".replace("c:", ns)))
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SqlAction.class);
-          builder.addPropertyValue("action", action.valueOf("@type"));
-          builder.addPropertyValue("filter", action.valueOf("@filter"));
+          if ("createItemOnlySqlPublisher".equals(publisher))
+          {
+            builder.addPropertyValue("action", publisherNode.valueOf("@type"));
+            builder.addPropertyValue("filter", "any");
+          }
+          else
+          {
+            builder.addPropertyValue("action", action.valueOf("@type"));
+            builder.addPropertyValue("filter", action.valueOf("@filter"));
+          }
           builder
             .addPropertyValue("query", StringUtils.trimToEmpty(action.valueOf("c:query/text()".replace("c:", ns))));
           builder.addPropertyValue("idColumn", action.valueOf("@idColumn"));
@@ -284,16 +294,22 @@ public class ConfigurationManager
         BeanDefinition sqlChangesetExtractor;
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder
-            .genericBeanDefinition(SqlChangesetExtractor.class);
-          builder.addPropertyReference("dataSource", "dataSource-" + node.valueOf("@dataSource"));
+            .genericBeanDefinition("createItemOnlySqlPublisher".equals(publisher)
+              ? CreateItemOnlySqlChangesetExtractor.class
+              : SqlChangesetExtractor.class);
+          if ("createItemOnlySqlPublisher".equals(publisher))
+          {
+            builder.addPropertyValue("type", publisherNode.valueOf("@type"));
+          }
+          builder.addPropertyReference("dataSource", "dataSource-" + publisherNode.valueOf("@dataSource"));
           builder.addPropertyValue("actions", actions);
           sqlChangesetExtractor = builder.getBeanDefinition();
         }
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ChangesetPublisher.class);
-          final String name = node.valueOf("@name");
+          final String name = publisherNode.valueOf("@name");
           builder.addPropertyValue("name", name);
-          builder.addPropertyReference("changesetProfileService", "profile-" + node.valueOf("@profile"));
+          builder.addPropertyReference("changesetProfileService", "profile-" + publisherNode.valueOf("@profile"));
           builder.addPropertyValue("changesetExtractor", sqlChangesetExtractor);
           final String beanName = "Publisher-" + name;
           applicationContext.registerBeanDefinition(beanName, builder.getBeanDefinition());

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -12,11 +11,12 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-public class SqlChangesetExtractor
+public class CreateItemOnlySqlChangesetExtractor
   implements ChangesetExtractor
 {
   private List<SqlAction> sqlActions;
   private NamedParameterJdbcTemplate jdbcTemplate;
+  private String type;
 
   @Override
   public void writeChangeset(
@@ -27,11 +27,7 @@ public class SqlChangesetExtractor
   {
     for (final SqlAction sqlAction : sqlActions)
     {
-      final Set<String> filters = sqlAction.getFilter();
-      if (filters.contains("any") || filters.contains(changesetType))
-      {
-        process(writer, sqlAction, changesetType, start, end);
-      }
+      process(writer, sqlAction, changesetType, start, end);
     }
   }
 
@@ -46,44 +42,30 @@ public class SqlChangesetExtractor
     params.put("start", start);
     params.put("end", end);
     params.put("kind", kind);
-    final RowCallbackHandler callbackHandler;
-    if ("create".equals(sqlAction.getAction()))
-    {
-      callbackHandler =
-          new CreateActionRowCallbackHandler(
-            jdbcTemplate,
-            writer,
-            sqlAction.getIdColumn(),
-            sqlAction.getIdPrefix(),
-            sqlAction.getIdSuffix(),
-            sqlAction.isUseLowerCaseColumnNames(),
-            sqlAction.getJsonColumnNames(),
-            sqlAction.getSubqueries());
-    }
-    else if ("delete".equals(sqlAction.getAction()))
-    {
-      callbackHandler =
-          new DeleteActionRowCallbackHandler(writer, sqlAction.getIdColumn());
-    }
-    else
-    {
-      throw new RuntimeException("Unknown action: " + sqlAction.getAction());
-    }
+    final RowCallbackHandler callbackHandler =
+        new CreateActionRowCallbackHandler(
+          jdbcTemplate,
+          writer,
+          sqlAction.getIdColumn(),
+          sqlAction.getIdPrefix(),
+          sqlAction.getIdSuffix(),
+          sqlAction.isUseLowerCaseColumnNames(),
+          sqlAction.getJsonColumnNames(),
+          sqlAction.getSubqueries());
     jdbcTemplate.query(sqlAction.getQuery(), params, callbackHandler);
-  }
-
-  @Override
-  public boolean hasTypeOverride()
-  {
-    return false;
   }
 
   @Override
   public String getType()
   {
-    return null;
+    return type;
   }
 
+  @Override
+  public boolean hasTypeOverride()
+  {
+    return true;
+  }
   @Required
   public void setDataSource(final DataSource dataSource)
   {
@@ -94,5 +76,11 @@ public class SqlChangesetExtractor
   public void setActions(final List<SqlAction> actions)
   {
     sqlActions = actions;
+  }
+
+  @Required
+  public void setType(final String type)
+  {
+    this.type = type;
   }
 }
