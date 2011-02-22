@@ -9,7 +9,7 @@
       jar="drivers/jtds-1.2.5.jar"
       class="net.sourceforge.jtds.jdbcx.JtdsDataSource">
       <!-- 1: sqlserver, 2: sybase -->
-      <serverType>1</serverType> 
+      <serverType>1</serverType>
       <serverName>localhost</serverName>
       <databaseName>test</databaseName>
       <user>test</user>
@@ -81,7 +81,6 @@
       <action type="create" filter="snapshot" idColumn="id">
         <query><![CDATA[
           select * from items
-          where last_updated < :end
         ]]></query>
         <subquery field="color-default"><![CDATA[
           select name from SubqueryColors where parent_id=:id order by name
