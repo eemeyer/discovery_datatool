@@ -79,7 +79,10 @@
 
     <complexType name="PublishersType">
       <sequence minOccurs="1" maxOccurs="unbounded">
-        <element name="sqlPublisher" type="tns:SqlPublisherType"/>
+        <choice minOccurs="1" maxOccurs="unbounded">
+          <element name="sqlPublisher" type="tns:SqlPublisherType"/>
+          <element name="createItemOnlySqlPublisher" type="tns:CreateItemOnlySqlPublisherType"/>
+        </choice>
       </sequence>
     </complexType>
 
@@ -118,15 +121,49 @@
       <attribute name="profile" type="string" use="required"/>
     </complexType>
 
-    <complexType name="ActionType">
+    <complexType name="CreateItemOnlySqlPublisherType">
+      <sequence minOccurs="1" maxOccurs="unbounded">
+        <element name="action" type="tns:CreateItemOnlyActionType"/>
+      </sequence>
+      <attribute name="name" type="string" use="required"/>
+      <attribute name="dataSource" type="string" use="required"/>
+      <attribute name="profile" type="string" use="required"/>
+    </complexType>
+
+    <complexType name="ActionTypeBase" abstract="true">
       <sequence>
         <element name="query" type="string"/>
         <element name="subquery" type="tns:SubQueryType" minOccurs="0" maxOccurs="unbounded"/>
       </sequence>
-      <attribute name="type" type="tns:ActionTypeType" use="required"/>
-      <attribute name="filter" type="tns:FilterActionType" use="optional"/>
       <attribute name="idColumn" type="string" use="required"/>
       <attribute name="jsonColumnNames" type="string"  use="optional"/>
+    </complexType>
+
+    <complexType name="ActionType">
+      <complexContent>
+        <extension base="tns:ActionTypeBase">
+          <annotation>
+            <documentation xml:lang="en">
+              Each action with a matching filter is run in sequence.
+            </documentation>
+          </annotation>
+          <attribute name="type" type="tns:ActionTypeType" use="required"/>
+          <attribute name="filter" type="tns:FilterActionType" use="optional"/>
+        </extension>
+      </complexContent>
+    </complexType>
+
+    <complexType name="CreateItemOnlyActionType">
+      <complexContent>
+        <extension base="tns:ActionTypeBase">
+          <annotation>
+            <documentation xml:lang="en">
+              Each action with a matching filter is run in sequence.
+            </documentation>
+          </annotation>
+          <attribute name="filter" type="tns:CreateItemOnlyFilterActionType" use="optional"/>
+        </extension>
+      </complexContent>
     </complexType>
 
     <complexType name="SubQueryType">
@@ -134,8 +171,7 @@
         <extension base="string">
       <attribute name="delimiter" type="string" use="optional" />
       <attribute name="field" type="string" />
-      <attribute name="type" type="tns:SubQueryTypeType"
-        default="array" />
+      <attribute name="type" type="tns:SubQueryTypeType" default="array" />
         </extension>
       </simpleContent>
     </complexType>
@@ -151,6 +187,13 @@
       <restriction base="string">
         <enumeration value="create"/>
         <enumeration value="delete"/>
+      </restriction>
+    </simpleType>
+
+    <simpleType name="CreateItemOnlyFilterActionType">
+      <restriction base="string">
+        <enumeration value="bulk"/>
+        <enumeration value="full"/>
       </restriction>
     </simpleType>
 
