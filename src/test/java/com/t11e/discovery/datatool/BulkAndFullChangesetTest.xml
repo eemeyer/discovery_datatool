@@ -26,21 +26,21 @@
     <createItemOnlySqlPublisher name="test-bulk" dataSource="dataSource" profile="sqlProfile" type="bulk">
       <action idColumn="id">
         <query><![CDATA[
-          select * from IntegrationContent where lastUpdated < :end
+          select * from IntegrationContent
         ]]></query>
       </action>
     </createItemOnlySqlPublisher>
     <createItemOnlySqlPublisher name="test-full" dataSource="dataSource" profile="sqlProfile" type="full">
       <action idColumn="id">
         <query><![CDATA[
-          select * from IntegrationContent where lastUpdated < :end
+          select * from IntegrationContent
         ]]></query>
       </action>
     </createItemOnlySqlPublisher>
     <createItemOnlySqlPublisher name="test-create-snapshot" dataSource="dataSource" profile="sqlProfile" type="snapshot">
       <action idColumn="id">
         <query><![CDATA[
-          select * from IntegrationContent where lastUpdated < :end
+          select * from IntegrationContent
         ]]></query>
       </action>
     </createItemOnlySqlPublisher>
