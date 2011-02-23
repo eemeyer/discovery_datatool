@@ -36,4 +36,4 @@ parameter style java
 language java
 reads sql data
 dynamic result sets 1
-external name 'com.t11e.discovery.datatool.IntegrationTest.integrationContentSP';
+external name 'com.t11e.discovery.datatool.IntegrationTestBase.integrationContentSP';

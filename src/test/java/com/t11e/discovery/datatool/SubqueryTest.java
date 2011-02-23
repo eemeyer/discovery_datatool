@@ -15,7 +15,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 public class SubqueryTest
-  extends IntegrationTestBase
+  extends EndToEndTestBase
 {
   @Override
   protected InputStream getConfigurationXml()
