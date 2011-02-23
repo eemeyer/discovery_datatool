@@ -176,6 +176,12 @@ public class ConfigurationManager
     }
   }
 
+  private static enum PublisherType
+  {
+    SQL,
+    CREATE_ITEM_ONLY
+  }
+
   @SuppressWarnings("unchecked")
   private GenericApplicationContext createApplicationContext(final InputStream is)
   {
@@ -250,12 +256,13 @@ public class ConfigurationManager
         .selectNodes("/c:config/c:publishers/c:sqlPublisher|/c:config/c:publishers/c:createItemOnlySqlPublisher"
         .replace("c:", ns)))
       {
-        final String publisher = publisherNode.getName();
+        final PublisherType publisher = "createItemOnlySqlPublisher".equals(publisherNode.getName())
+          ? PublisherType.CREATE_ITEM_ONLY : PublisherType.SQL;
         final List<SqlAction> actions = new ArrayList<SqlAction>();
         for (final Node action : (List<Node>) publisherNode.selectNodes("c:action".replace("c:", ns)))
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SqlAction.class);
-          if ("createItemOnlySqlPublisher".equals(publisher))
+          if (PublisherType.CREATE_ITEM_ONLY == publisher)
           {
             builder.addPropertyValue("action", publisherNode.valueOf("@type"));
             builder.addPropertyValue("filter", "any");
@@ -293,13 +300,15 @@ public class ConfigurationManager
         }
         BeanDefinition sqlChangesetExtractor;
         {
-          final BeanDefinitionBuilder builder = BeanDefinitionBuilder
-            .genericBeanDefinition("createItemOnlySqlPublisher".equals(publisher)
-              ? CreateItemOnlySqlChangesetExtractor.class
-              : SqlChangesetExtractor.class);
-          if ("createItemOnlySqlPublisher".equals(publisher))
+          final BeanDefinitionBuilder builder;
+          if (PublisherType.CREATE_ITEM_ONLY == publisher)
           {
+            builder = BeanDefinitionBuilder.genericBeanDefinition(CreateItemOnlySqlChangesetExtractor.class);
             builder.addPropertyValue("type", publisherNode.valueOf("@type"));
+          }
+          else
+          {
+            builder = BeanDefinitionBuilder.genericBeanDefinition(SqlChangesetExtractor.class);
           }
           builder.addPropertyReference("dataSource", "dataSource-" + publisherNode.valueOf("@dataSource"));
           builder.addPropertyValue("actions", actions);
