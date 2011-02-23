@@ -252,34 +252,28 @@ public class ConfigurationManager
         final List<SqlAction> actions = new ArrayList<SqlAction>();
         for (final Node action : (List<Node>) node.selectNodes("c:action".replace("c:", ns)))
         {
-          final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SqlAction.class);
-          builder.addPropertyValue("action", action.valueOf("@type"));
-          builder.addPropertyValue("filter", action.valueOf("@filter"));
-          builder
-            .addPropertyValue("query", StringUtils.trimToEmpty(action.valueOf("c:query/text()".replace("c:", ns))));
-          builder.addPropertyValue("idColumn", action.valueOf("@idColumn"));
-          builder.addPropertyValue("jsonColumnNames", action.valueOf("@jsonColumnNames"));
-          final List<SubQuery> subqueries = new ArrayList<SubQuery>();
-          for (final Node subquery : (List<Node>) action.selectNodes("c:subquery".replace("c:", ns)))
-          {
-            final String sql = subquery.getText();
-            final String field = subquery.valueOf("@field");
-            String type = subquery.valueOf("@type");
-            if (StringUtils.isBlank(type))
-            {
-              type = SubQuery.Type.ARRAY.name();
-            }
-            String delimiter = subquery.valueOf("@delimiter");
-            if (StringUtils.isBlank(delimiter) && SubQuery.Type.DELIMITED.name().equalsIgnoreCase(type))
-            {
-              delimiter = ",";
-            }
-            subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, delimiter));
-          }
-          builder.addPropertyValue("subqueries", subqueries);
-          final String beanName = "SqlAction-" + System.identityHashCode(builder);
-          applicationContext.registerBeanDefinition(beanName, builder.getBeanDefinition());
-          actions.add(applicationContext.getBean(beanName, SqlAction.class));
+          defineAndInstantiateSqlAction(actions, applicationContext, action, action.valueOf("@type"),
+            action.valueOf("@filter"), ns);
+        }
+        for (final Node bulkOrFull : (List<Node>) node.selectNodes("c:bulk|c:full".replace("c:", ns)))
+        {
+          //  TODO
+        }
+        for (final Node setItem : (List<Node>) node.selectNodes("c:snapshot/c:set-item".replace("c:", ns)))
+        {
+          defineAndInstantiateSqlAction(actions, applicationContext, setItem, "create", "snapshot", ns);
+        }
+        for (final Node removeItem : (List<Node>) node.selectNodes("c:snapshot/c:remove-item".replace("c:", ns)))
+        {
+          defineAndInstantiateSqlAction(actions, applicationContext, removeItem, "delete", "snapshot", ns);
+        }
+        for (final Node setItem : (List<Node>) node.selectNodes("c:delta/c:set-item".replace("c:", ns)))
+        {
+          defineAndInstantiateSqlAction(actions, applicationContext, setItem, "create", "delta", ns);
+        }
+        for (final Node removeItem : (List<Node>) node.selectNodes("c:delta/c:remove-item".replace("c:", ns)))
+        {
+          defineAndInstantiateSqlAction(actions, applicationContext, removeItem, "delete", "delta", ns);
         }
         BeanDefinition sqlChangesetExtractor;
         {
@@ -309,6 +303,60 @@ public class ConfigurationManager
     }
     applicationContext.refresh();
     return applicationContext;
+  }
+
+  private void defineAndInstantiateSqlAction(final List<SqlAction> actions,
+    final GenericApplicationContext applicationContext, final Node setItem, final String action, final String filter,
+    final String ns)
+  {
+    final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SqlAction.class);
+    builder.addPropertyValue("action", action);
+    builder.addPropertyValue("filter", filter);
+    fillActionBeanDefinition(builder, setItem, ns);
+    instantiateAction(actions, applicationContext, registerSqlAction(applicationContext, builder));
+  }
+
+  private void instantiateAction(final List<SqlAction> target, final GenericApplicationContext applicationContext,
+    final String beanName)
+  {
+    target.add(applicationContext.getBean(beanName, SqlAction.class));
+  }
+
+  private String registerSqlAction(final GenericApplicationContext applicationContext,
+    final BeanDefinitionBuilder builder)
+  {
+    final String beanName = "SqlAction-" + System.identityHashCode(builder);
+    applicationContext.registerBeanDefinition(beanName, builder.getBeanDefinition());
+    return beanName;
+  }
+
+  @SuppressWarnings("unchecked")
+  private void fillActionBeanDefinition(final BeanDefinitionBuilder builder, final Node parentElementToQuery,
+    final String ns)
+  {
+    builder.addPropertyValue("idColumn", parentElementToQuery.valueOf("@idColumn"));
+    builder.addPropertyValue("jsonColumnNames", parentElementToQuery.valueOf("@jsonColumnNames"));
+    builder
+      .addPropertyValue("query",
+        StringUtils.trimToEmpty(parentElementToQuery.valueOf("c:query/text()".replace("c:", ns))));
+    final List<SubQuery> subqueries = new ArrayList<SubQuery>();
+    for (final Node subquery : (List<Node>) parentElementToQuery.selectNodes("c:subquery".replace("c:", ns)))
+    {
+      final String sql = subquery.getText();
+      final String field = subquery.valueOf("@field");
+      String type = subquery.valueOf("@type");
+      if (StringUtils.isBlank(type))
+      {
+        type = SubQuery.Type.ARRAY.name();
+      }
+      String delimiter = subquery.valueOf("@delimiter");
+      if (StringUtils.isBlank(delimiter) && SubQuery.Type.DELIMITED.name().equalsIgnoreCase(type))
+      {
+        delimiter = ",";
+      }
+      subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, delimiter));
+    }
+    builder.addPropertyValue("subqueries", subqueries);
   }
 
   @SuppressWarnings("unchecked")
