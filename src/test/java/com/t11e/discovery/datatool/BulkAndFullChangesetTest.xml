@@ -47,11 +47,11 @@
             select * from IntegrationContent where lastUpdated < :end
           ]]></query>
         </set-item>
-        <delete-item idColumn="id">
+        <remove-item idColumn="id">
           <query><![CDATA[
             select id from IntegrationDeleted where lastUpdated < :end
           ]]></query>
-        </delete-item>
+        </remove-item>
       </delta>
     </sqlPublisher>
 
@@ -79,11 +79,11 @@
             select * from IntegrationContent where lastUpdated < :end
           ]]></query>
         </set-item>
-        <delete-item idColumn="id">
+        <remove-item idColumn="id">
           <query><![CDATA[
             select id from IntegrationDeleted where lastUpdated < :end
           ]]></query>
-        </delete-item>
+        </remove-item>
       </delta>
     </sqlPublisher>
 
@@ -104,11 +104,11 @@
             select * from IntegrationContent
           ]]></query>
         </set-item>
-        <delete-item idColumn="id">
+        <remove-item idColumn="id">
           <query><![CDATA[
             select id from IntegrationDeleted
           ]]></query>
-        </delete-item>
+        </remove-item>
       </snapshot>
       <delta>
         <set-item idColumn="id">
@@ -116,11 +116,11 @@
             select * from IntegrationContent where lastUpdated < :end
           ]]></query>
         </set-item>
-        <delete-item idColumn="id">
+        <remove-item idColumn="id">
           <query><![CDATA[
             select id from IntegrationDeleted where lastUpdated < :end
           ]]></query>
-        </delete-item>
+        </remove-item>
       </delta>
     </sqlPublisher>
 
