@@ -111,31 +111,53 @@
 
     <complexType name="SqlPublisherType">
       <sequence minOccurs="1" maxOccurs="unbounded">
-        <element name="action" type="tns:ActionType"/>
+        <choice minOccurs="0" maxOccurs="1">
+          <element name="bulk" type="tns:BulkFullType"/>
+          <element name="full" type="tns:BulkFullType"/>
+          <element name="snapshot" type="tns:SnapshotOrDeltaType"/>
+        </choice>
+        <element name="delta" minOccurs="0" maxOccurs="1" type="tns:SnapshotOrDeltaType"/>
       </sequence>
       <attribute name="name" type="string" use="required"/>
       <attribute name="dataSource" type="string" use="required"/>
       <attribute name="profile" type="string" use="required"/>
     </complexType>
 
-    <complexType name="ActionType">
+    <complexType name="BulkFullType">
+      <sequence>
+        <element name="set-item" minOccurs="1" maxOccurs="unbounded" type="tns:SetItemType"/>
+      </sequence>
+    </complexType>
+
+    <complexType name="SnapshotOrDeltaType">
+      <sequence minOccurs="0" maxOccurs="unbounded">
+        <element name="set-item" minOccurs="1" maxOccurs="unbounded" type="tns:SetItemType"/>
+        <element name="remove-item" minOccurs="0" maxOccurs="unbounded" type="tns:DeleteItemType"/>
+      </sequence>
+    </complexType>
+
+    <complexType name="SetItemType">
       <sequence>
         <element name="query" type="string"/>
         <element name="subquery" type="tns:SubQueryType" minOccurs="0" maxOccurs="unbounded"/>
       </sequence>
-      <attribute name="type" type="tns:ActionTypeType" use="required"/>
-      <attribute name="filter" type="tns:FilterActionType" use="optional"/>
       <attribute name="idColumn" type="string" use="required"/>
       <attribute name="jsonColumnNames" type="string"  use="optional"/>
+    </complexType>
+
+    <complexType name="DeleteItemType">
+      <sequence>
+        <element name="query" type="string"/>
+      </sequence>
+      <attribute name="idColumn" type="string" use="required"/>
     </complexType>
 
     <complexType name="SubQueryType">
       <simpleContent>
         <extension base="string">
-      <attribute name="delimiter" type="string" use="optional" />
-      <attribute name="field" type="string" />
-      <attribute name="type" type="tns:SubQueryTypeType"
-        default="array" />
+          <attribute name="delimiter" type="string" use="optional" />
+          <attribute name="field" type="string" />
+          <attribute name="type" type="tns:SubQueryTypeType" default="array" />
         </extension>
       </simpleContent>
     </complexType>
