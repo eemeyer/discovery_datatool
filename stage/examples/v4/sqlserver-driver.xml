@@ -1,0 +1,101 @@
+<config
+  xmlns="http://transparensee.com/schema/datatool-config-4"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation=
+    "http://transparensee.com/schema/datatool-config-4
+     http://transparensee.com/schema/datatool-config-4.xsd">
+  <dataSources>
+    <driver name="production-dataSource"
+      jar="drivers/jtds-1.2.5.jar"
+      class="net.sourceforge.jtds.jdbc.Driver">
+      <url>jdbc:jtds:sqlserver://localhost/test</url>
+      <username>test</username>
+      <password>test</password>
+    </driver>
+  </dataSources>
+
+  <profiles>
+    <sqlProfile name="production-profile" dataSource="production-dataSource">
+      <retrieveSql startColumn="start" endColumn="end">
+        select last_run as start, CURRENT_TIMESTAMP as end
+        from changeset_profile
+        where name = :name
+      </retrieveSql>
+      <updateSql>
+        update changeset_profile
+        set last_run = :lastRun
+        where name = :name
+      </updateSql>
+    </sqlProfile>
+  </profiles>
+
+  <publishers>
+    <sqlPublisher name="production"
+      dataSource="production-dataSource" profile="production-profile">
+      <snapshot>
+        <set-item idColumn="id">
+          <query><![CDATA[
+            select * from items
+          ]]></query>
+          <subquery field="color-default"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-array" type="array"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-delimited" type="delimited"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+        </set-item>
+      </snapshot>
+      <delta>
+        <set-item idColumn="id">
+          <!--
+          The following bound parameters are available to the query:
+          :start - The inclusive start of the date range for this changeset as a java.util.Date.
+          :end - The exclusive end of the date range for this changeset as a java.util.Date.
+          :kind - "snapshot" or "delta"
+           -->
+          <query><![CDATA[
+            select * from items
+            where last_updated >= :start and last_updated < :end
+          ]]></query>
+          <!--
+            Each action of type "create" can contain zero or more subquery elements.
+            Each subquery must return only a single column.
+            If a subquery returns more than one column, a run-time exception is thrown, and the changeset will fail to be created.
+            The field attribute specifies the field name to use when creating the changeset set-item entry.
+            Properties returned in the main query can be replaced by subquery values by using an overlapping field name.
+            The default subquery type is "array" - which builds an array in the set-item structure for the multiple values.
+            The other type option value is "delimited" - which builds a single delimited string containing the multiple values.
+            An optional delimiter can specified. If none is specified, then the delimiter defaults to a comma.
+            All the columns returned by the main query are available to the subquery as named bound parameters
+            (:start, :end, and :kind are not available to the subquery).
+            The subquery examples below use the id returned from the main query as a bound parameter.
+           -->
+          <subquery field="color-default"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-array" type="array"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-delimited" type="delimited"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
+            select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+        </set-item>
+        <remove-item idColumn="id">
+          <query><![CDATA[
+            select id from deleted_items
+            where last_updated >= :start and last_updated < :end
+          ]]></query>
+        </remove-item>
+      </delta>
+    </sqlPublisher>
+  </publishers>
+</config>
