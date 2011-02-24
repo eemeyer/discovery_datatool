@@ -64,7 +64,7 @@
             where last_updated >= :start and last_updated < :end
           ]]></query>
           <!--
-            Each action of type "create" can contain zero or more subquery elements.
+            Each set-item can contain zero or more subquery elements.
             Each subquery must return only a single column.
             If a subquery returns more than one column, a run-time exception is thrown, and the changeset will fail to be created.
             The field attribute specifies the field name to use when creating the changeset set-item entry.
