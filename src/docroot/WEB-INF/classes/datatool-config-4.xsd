@@ -125,14 +125,16 @@
 
     <complexType name="BulkFullType">
       <sequence>
-        <element name="set-item" minOccurs="1" maxOccurs="unbounded" type="tns:SetItemType"/>
+        <element name="set-item" minOccurs="0" maxOccurs="unbounded" type="tns:SetItemType"/>
       </sequence>
     </complexType>
 
     <complexType name="SnapshotOrDeltaType">
       <sequence minOccurs="0" maxOccurs="unbounded">
-        <element name="set-item" minOccurs="1" maxOccurs="unbounded" type="tns:SetItemType"/>
-        <element name="remove-item" minOccurs="0" maxOccurs="unbounded" type="tns:DeleteItemType"/>
+        <choice minOccurs="0" maxOccurs="1">
+          <element name="set-item" minOccurs="0" maxOccurs="unbounded" type="tns:SetItemType"/>
+          <element name="remove-item" minOccurs="0" maxOccurs="unbounded" type="tns:RemoveItemType"/>
+        </choice>
       </sequence>
     </complexType>
 
@@ -145,7 +147,7 @@
       <attribute name="jsonColumnNames" type="string"  use="optional"/>
     </complexType>
 
-    <complexType name="DeleteItemType">
+    <complexType name="RemoveItemType">
       <sequence>
         <element name="query" type="string"/>
       </sequence>
