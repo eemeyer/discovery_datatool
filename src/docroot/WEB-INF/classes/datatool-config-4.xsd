@@ -11,8 +11,8 @@
       <sequence>
         <element name="accessControl" type="tns:AccessControlType" minOccurs="0" maxOccurs="1"/>
         <element name="dataSources" type="tns:DataSourcesType"/>
-        <element name="profiles" type="tns:ProfilesType"/>
-        <element name="publishers" type="tns:PublishersType"/>
+        <element name="profiles" type="tns:ProfilesType" minOccurs="0" maxOccurs="1"/>
+        <element name="publishers" type="tns:PublishersType" minOccurs="0" maxOccurs="1"/>
       </sequence>
     </complexType>
 
@@ -120,7 +120,7 @@
       </sequence>
       <attribute name="name" type="string" use="required"/>
       <attribute name="dataSource" type="string" use="required"/>
-      <attribute name="profile" type="string" use="required"/>
+      <attribute name="profile" type="string" use="optional"/>
     </complexType>
 
     <complexType name="BulkFullType">

@@ -287,7 +287,11 @@ public class ConfigurationManager
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ChangesetPublisher.class);
           final String name = node.valueOf("@name");
           builder.addPropertyValue("name", name);
-          builder.addPropertyReference("changesetProfileService", "profile-" + node.valueOf("@profile"));
+          final String profile = sqlPublisher.valueOf("@profile");
+          if (StringUtils.isNotBlank(profile))
+          {
+            builder.addPropertyReference("changesetProfileService", "profile-" + profile);
+          }
           builder.addPropertyValue("changesetExtractor", sqlChangesetExtractor);
           final String beanName = "Publisher-" + name;
           applicationContext.registerBeanDefinition(beanName, builder.getBeanDefinition());

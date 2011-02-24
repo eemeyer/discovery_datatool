@@ -70,7 +70,7 @@ public class ChangesetController
         changesetPublisher.getChangesetProfileService();
     final Date start;
     final Date end;
-    if (StringUtils.isBlank(profile))
+    if (StringUtils.isBlank(profile) || changesetProfileService == null)
     {
       start = startParam;
       end = endParam;
@@ -90,7 +90,7 @@ public class ChangesetController
       }
     }
     publishImpl(request, response, changesetPublisher.getChangesetExtractor(), start, end);
-    if (StringUtils.isNotBlank(profile) && !dryRun)
+    if (StringUtils.isNotBlank(profile) && !dryRun && changesetProfileService != null)
     {
       changesetProfileService.saveChangesetProfileLastRun(profile, end);
     }
