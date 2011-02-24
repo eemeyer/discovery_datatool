@@ -78,7 +78,7 @@
     </complexType>
 
     <complexType name="PublishersType">
-      <sequence minOccurs="1" maxOccurs="unbounded">
+      <sequence minOccurs="0" maxOccurs="unbounded">
         <element name="sqlPublisher" type="tns:SqlPublisherType"/>
       </sequence>
     </complexType>
