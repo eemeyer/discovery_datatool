@@ -110,7 +110,7 @@
     </complexType>
 
     <complexType name="SqlPublisherType">
-      <sequence minOccurs="1" maxOccurs="unbounded">
+      <sequence>
         <choice minOccurs="0" maxOccurs="1">
           <element name="bulk" type="tns:BulkFullType"/>
           <element name="full" type="tns:BulkFullType"/>
