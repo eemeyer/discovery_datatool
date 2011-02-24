@@ -1,20 +1,24 @@
 package com.t11e.discovery.datatool;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class SqlChangesetExtractor
   implements ChangesetExtractor
 {
-  private List<SqlAction> sqlActions;
+  private Collection<SqlAction> filteredActions = Collections.emptyList();
+  private Collection<SqlAction> completeActions = Collections.emptyList();
+  private Collection<SqlAction> incrementalActions = Collections.emptyList();
   private NamedParameterJdbcTemplate jdbcTemplate;
 
   @Override
@@ -24,12 +28,26 @@ public class SqlChangesetExtractor
     final Date start,
     final Date end)
   {
-    for (final SqlAction sqlAction : sqlActions)
+    for (final SqlAction action : filteredActions)
     {
-      final Set<String> filters = sqlAction.getFilter();
+      final Set<String> filters = action.getFilter();
       if (filters.contains("any") || filters.contains(changesetType))
       {
-        process(writer, sqlAction, changesetType, start, end);
+        process(writer, action, changesetType, start, end);
+      }
+    }
+    if (start == null)
+    {
+      for (final SqlAction action : completeActions)
+      {
+        process(writer, action, changesetType, start, end);
+      }
+    }
+    else
+    {
+      for (final SqlAction action : incrementalActions)
+      {
+        process(writer, action, changesetType, start, end);
       }
     }
   }
@@ -41,10 +59,10 @@ public class SqlChangesetExtractor
     final Date start,
     final Date end)
   {
-    final MapSqlParameterSource params = new MapSqlParameterSource();
-    params.addValue("start", start);
-    params.addValue("end", end);
-    params.addValue("kind", kind);
+    final Map<String, Object> params = new HashMap<String, Object>();
+    params.put("start", start);
+    params.put("end", end);
+    params.put("kind", kind);
     final RowCallbackHandler callbackHandler;
     if ("create".equals(sqlAction.getAction()))
     {
@@ -78,8 +96,20 @@ public class SqlChangesetExtractor
   }
 
   @Required
-  public void setActions(final List<SqlAction> actions)
+  public void setFilteredActions(final Collection<SqlAction> actions)
   {
-    sqlActions = actions;
+    filteredActions = actions;
+  }
+
+  @Required
+  public void setCompleteActions(final Collection<SqlAction> completeActions)
+  {
+    this.completeActions = completeActions;
+  }
+
+  @Required
+  public void setIncrementalActions(final Collection<SqlAction> incrementalActions)
+  {
+    this.incrementalActions = incrementalActions;
   }
 }

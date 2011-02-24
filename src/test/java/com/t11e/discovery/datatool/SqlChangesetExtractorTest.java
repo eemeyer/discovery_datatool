@@ -51,8 +51,7 @@ public class SqlChangesetExtractorTest
       action.setAction("create");
       action.setIdColumn("id");
       action.setQuery("select * from empty_table");
-      extractor.setActions(CollectionsFactory.makeList(
-        action));
+      extractor.setFilteredActions(CollectionsFactory.makeList(action));
     }
     extractor.writeChangeset(writer, "snapshot", null, null);
     mockery.assertIsSatisfied();
@@ -90,8 +89,7 @@ public class SqlChangesetExtractorTest
         "select id " +
           "from date_range_test " +
           "where last_updated >= :start and last_updated < :end");
-      extractor.setActions(CollectionsFactory.makeList(
-        action));
+      extractor.setFilteredActions(CollectionsFactory.makeList(action));
     }
     extractor.writeChangeset(writer, "delta", start, end);
     mockery.assertIsSatisfied();
@@ -204,8 +202,7 @@ public class SqlChangesetExtractorTest
       action.setQuery("select * from subquery_test");
       action.setSubqueries(Arrays.asList(new SubQuery(SubQuery.Type.DELIMITED,
         "select name from subquery_joined_test where parent_id=:id", "fish", ",")));
-      extractor.setActions(CollectionsFactory.makeList(
-        action));
+      extractor.setFilteredActions(CollectionsFactory.makeList(action));
     }
     final ChangesetWriter writer = mockery.mock(ChangesetWriter.class);
     mockery.checking(new Expectations()
@@ -243,8 +240,7 @@ public class SqlChangesetExtractorTest
       action.setAction("create");
       action.setIdColumn("id");
       action.setQuery("select * from " + tableName);
-      extractor.setActions(CollectionsFactory.makeList(
-        action));
+      extractor.setFilteredActions(CollectionsFactory.makeList(action));
     }
     extractor.writeChangeset(writer, "snapshot", null, null);
     mockery.assertIsSatisfied();

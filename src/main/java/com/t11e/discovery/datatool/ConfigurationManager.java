@@ -243,49 +243,47 @@ public class ConfigurationManager
       builder.addPropertyValue("updateSql", node.valueOf("c:updateSql".replace("c:", ns)));
       applicationContext.registerBeanDefinition("profile-" + node.valueOf("@name"), builder.getBeanDefinition());
     }
-
     {
       final List<ChangesetPublisher> publishers = new ArrayList<ChangesetPublisher>();
-      for (final Node node : (List<Node>) document.selectNodes("/c:config/c:publishers/c:sqlPublisher"
+      for (final Node sqlPublisher : (List<Node>) document.selectNodes("/c:config/c:publishers/c:sqlPublisher"
         .replace("c:", ns)))
       {
-        final List<SqlAction> actions = new ArrayList<SqlAction>();
-        for (final Node action : (List<Node>) node.selectNodes("c:action".replace("c:", ns)))
+        final List<SqlAction> filtered = new ArrayList<SqlAction>();
+        final List<SqlAction> complete = new ArrayList<SqlAction>();
+        final List<SqlAction> incremental = new ArrayList<SqlAction>();
+
+        for (final Node action : (List<Node>) sqlPublisher.selectNodes("c:action".replace("c:", ns)))
         {
-          defineAndInstantiateSqlAction(actions, applicationContext, action, action.valueOf("@type"),
+          defineAndInstantiateSqlAction(filtered, applicationContext, action, action.valueOf("@type"),
             action.valueOf("@filter"), ns);
         }
-        for (final Node bulkOrFull : (List<Node>) node.selectNodes("c:bulk|c:full".replace("c:", ns)))
+        for (final Node action : (List<Node>) sqlPublisher.selectNodes("c:bulk/c:set-item|c:full/c:set-item".replace("c:", ns)))
         {
-          //  TODO
+          defineAndInstantiateSqlActionFromSetItemOrRemoveItem(complete, applicationContext, action, ns);
         }
-        for (final Node setItem : (List<Node>) node.selectNodes("c:snapshot/c:set-item".replace("c:", ns)))
+        for (final Node action : (List<Node>) sqlPublisher.selectNodes("c:snapshot/c:set-item|c:snapshot/c:remove-item"
+          .replace("c:", ns)))
         {
-          defineAndInstantiateSqlAction(actions, applicationContext, setItem, "create", "snapshot", ns);
+          defineAndInstantiateSqlActionFromSetItemOrRemoveItem(complete, applicationContext, action, ns);
         }
-        for (final Node removeItem : (List<Node>) node.selectNodes("c:snapshot/c:remove-item".replace("c:", ns)))
+        for (final Node action : (List<Node>) sqlPublisher.selectNodes("c:delta/c:set-item|c:delta/c:remove-item".replace(
+          "c:", ns)))
         {
-          defineAndInstantiateSqlAction(actions, applicationContext, removeItem, "delete", "snapshot", ns);
-        }
-        for (final Node setItem : (List<Node>) node.selectNodes("c:delta/c:set-item".replace("c:", ns)))
-        {
-          defineAndInstantiateSqlAction(actions, applicationContext, setItem, "create", "delta", ns);
-        }
-        for (final Node removeItem : (List<Node>) node.selectNodes("c:delta/c:remove-item".replace("c:", ns)))
-        {
-          defineAndInstantiateSqlAction(actions, applicationContext, removeItem, "delete", "delta", ns);
+          defineAndInstantiateSqlActionFromSetItemOrRemoveItem(incremental, applicationContext, action, ns);
         }
         BeanDefinition sqlChangesetExtractor;
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder
             .genericBeanDefinition(SqlChangesetExtractor.class);
-          builder.addPropertyReference("dataSource", "dataSource-" + node.valueOf("@dataSource"));
-          builder.addPropertyValue("actions", actions);
+          builder.addPropertyReference("dataSource", "dataSource-" + sqlPublisher.valueOf("@dataSource"));
+          builder.addPropertyValue("filteredActions", filtered);
+          builder.addPropertyValue("completeActions", complete);
+          builder.addPropertyValue("incrementalActions", incremental);
           sqlChangesetExtractor = builder.getBeanDefinition();
         }
         {
           final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(ChangesetPublisher.class);
-          final String name = node.valueOf("@name");
+          final String name = sqlPublisher.valueOf("@name");
           builder.addPropertyValue("name", name);
           final String profile = sqlPublisher.valueOf("@profile");
           if (StringUtils.isNotBlank(profile))
@@ -307,6 +305,14 @@ public class ConfigurationManager
     }
     applicationContext.refresh();
     return applicationContext;
+  }
+
+  private void defineAndInstantiateSqlActionFromSetItemOrRemoveItem(final List<SqlAction> target,
+    final GenericApplicationContext applicationContext, final Node action, final String ns)
+  {
+    final String filter = action.getParent().getName();
+    final String type = "set-item".equals(action.getName()) ? "create" : "delete";
+    defineAndInstantiateSqlAction(target, applicationContext, action, type, filter, ns);
   }
 
   private void defineAndInstantiateSqlAction(final List<SqlAction> actions,
