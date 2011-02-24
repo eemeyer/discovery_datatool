@@ -44,13 +44,13 @@
       <delta>
         <set-item idColumn="id">
           <query><![CDATA[
-            select * from IntegrationContent where lastUpdated < :end
-          ]]></query>
+          select * from IntegrationContent where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </set-item>
         <remove-item idColumn="id">
           <query><![CDATA[
-            select id from IntegrationDeleted where lastUpdated < :end
-          ]]></query>
+          select id from IntegrationDeleted where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </remove-item>
       </delta>
     </sqlPublisher>
@@ -76,13 +76,13 @@
       <delta>
         <set-item idColumn="id">
           <query><![CDATA[
-            select * from IntegrationContent where lastUpdated < :end
-          ]]></query>
+          select * from IntegrationContent where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </set-item>
         <remove-item idColumn="id">
           <query><![CDATA[
-            select id from IntegrationDeleted where lastUpdated < :end
-          ]]></query>
+          select id from IntegrationDeleted where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </remove-item>
       </delta>
     </sqlPublisher>
@@ -94,6 +94,11 @@
             select * from IntegrationContent
           ]]></query>
         </set-item>
+        <remove-item idColumn="id">
+          <query><![CDATA[
+            select id from IntegrationDeleted
+          ]]></query>
+        </remove-item>
       </snapshot>
     </sqlPublisher>
 
@@ -113,13 +118,13 @@
       <delta>
         <set-item idColumn="id">
           <query><![CDATA[
-            select * from IntegrationContent where lastUpdated < :end
-          ]]></query>
+          select * from IntegrationContent where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </set-item>
         <remove-item idColumn="id">
           <query><![CDATA[
-            select id from IntegrationDeleted where lastUpdated < :end
-          ]]></query>
+          select id from IntegrationDeleted where lastUpdated >= :start and lastUpdated < :end
+        ]]></query>
         </remove-item>
       </delta>
     </sqlPublisher>

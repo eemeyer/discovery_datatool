@@ -20,6 +20,7 @@ public class SqlChangesetExtractor
   private Collection<SqlAction> completeActions = Collections.emptyList();
   private Collection<SqlAction> incrementalActions = Collections.emptyList();
   private NamedParameterJdbcTemplate jdbcTemplate;
+  private String completeActionType;
 
   @Override
   public void writeChangeset(
@@ -50,6 +51,24 @@ public class SqlChangesetExtractor
         process(writer, action, changesetType, start, end);
       }
     }
+  }
+
+  @Override
+  public String determineType(final Date start)
+  {
+    String result = start == null ? "snapshot" : "delta";
+    if (!completeActions.isEmpty())
+    {
+      if (start == null)
+      {
+        result = completeActionType;
+      }
+      else if (incrementalActions.isEmpty())
+      {
+        result = completeActionType;
+      }
+    }
+    return result;
   }
 
   private void process(
@@ -105,6 +124,18 @@ public class SqlChangesetExtractor
   public void setCompleteActions(final Collection<SqlAction> completeActions)
   {
     this.completeActions = completeActions;
+    if (!completeActions.isEmpty())
+    {
+      final Set<String> filter = completeActions.iterator().next().getFilter();
+      if (!filter.isEmpty())
+      {
+        completeActionType = filter.iterator().next();
+      }
+    }
+    else
+    {
+      completeActionType = "";
+    }
   }
 
   @Required
