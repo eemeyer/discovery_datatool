@@ -66,14 +66,31 @@
         </remove-item>
       </snapshot>
     </sqlPublisher>
-    <sqlPublisher name="test-snapshot-invalid" dataSource="dataSource">
+    <sqlPublisher name="test-snapshot-multi-column" dataSource="dataSource">
       <snapshot>
         <set-item idColumn="id">
           <query><![CDATA[
           select * from SubqueryContent
         ]]></query>
-          <subquery field="color" type="delimited"><![CDATA[
-          select * from SubqueryColors where parent_id=:id order by name
+          <subquery field="color"><![CDATA[
+          select name, asnumber as renamed from SubqueryColors where parent_id=:id order by name
+        ]]></subquery>
+        </set-item>
+        <remove-item idColumn="id">
+          <query><![CDATA[
+          select id from SubqueryDeleted
+        ]]></query>
+        </remove-item>
+      </snapshot>
+    </sqlPublisher>
+    <sqlPublisher name="test-snapshot-multi-column-discriminator" dataSource="dataSource">
+      <snapshot>
+        <set-item idColumn="id">
+          <query><![CDATA[
+          select * from SubqueryContent
+        ]]></query>
+          <subquery field="address" discriminator="discriminator"><![CDATA[
+          select discriminator, street from SubqueryAddress where parent_id=:id order by id
         ]]></subquery>
         </set-item>
         <remove-item idColumn="id">

@@ -1,18 +1,13 @@
 package com.t11e.discovery.datatool;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.dom4j.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 public class SubqueryTest
   extends EndToEndTestBase
@@ -120,18 +115,71 @@ public class SubqueryTest
   }
 
   @Test
-  public void testInvalidSubQuery()
-    throws XMLStreamException, IOException
+  public void testSubQueryWithMultipleColumn()
   {
-    try
-    {
-      changesetController.publish(new MockHttpServletRequest(), new MockHttpServletResponse(),
-          "test-snapshot-invalid", null, null, "", false, false);
-      Assert.fail("Subquery that returns multiple columns should cause exception.");
-    }
-    catch (final RuntimeException e)
-    {
-      Assert.assertTrue(e.getMessage().contains("Subquery returned more than one column."));
-    }
+    final Document doc = assertChangeset("test-snapshot-multi-column", "", "snapshot",
+      Arrays.asList("1", "2", "3"),
+      Arrays.asList("4", "5"),
+      false);
+    Assert.assertEquals("red",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='1']/properties/struct/entry[@name='color']/struct/entry[@name='name']/string/text()")
+      .getText());
+    Assert.assertEquals("10",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='1']/properties/struct/entry[@name='color']/struct/entry[@name='renamed']/string/text()")
+      .getText());
+
+    Assert.assertEquals(2,
+      doc.selectNodes("/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element").size());
+
+    Assert.assertEquals("orange",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element[1]/struct/entry[@name='name']/string/text()")
+      .getText());
+    Assert.assertEquals("yellow",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element[2]/struct/entry[@name='name']/string/text()")
+      .getText());
+
+    Assert.assertNull(doc.selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='color']"));
   }
+
+  @Test
+  public void testSubQueryWithMultipleColumnAndDiscriminator()
+  {
+    final Document doc = assertChangeset("test-snapshot-multi-column-discriminator", "", "snapshot",
+      Arrays.asList("1", "2", "3"),
+      Arrays.asList("4", "5"),
+      false);
+
+    Assert.assertEquals("1 main st",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='street']/string/text()")
+      .getText());
+    Assert.assertNull(
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='discriminator']/string"));
+
+    Assert.assertEquals(2,
+      doc.selectNodes("/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element").size());
+
+    Assert.assertEquals(
+      "123 main st",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element[1]/struct/entry[@name='street']/string/text()")
+      .getText());
+    Assert.assertNull(
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element[1]/struct/entry[@name='discriminator']/string"));
+
+    Assert.assertEquals(
+      "456 main st",
+      doc.selectSingleNode(
+      "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element[2]/struct/entry[@name='street']/string/text()")
+      .getText());
+
+    Assert.assertNull(doc.selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='address']"));
+  }
+
 }
