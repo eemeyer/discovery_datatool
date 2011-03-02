@@ -68,7 +68,7 @@ public class SubqueryTest
   {
     Assert.assertEquals("red",
       doc.selectSingleNode(
-        "/changeset/set-item[@id='1']/properties/struct/entry[@name='" + fieldName + "']/array/element/string/text()")
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='" + fieldName + "']/string/text()")
         .getText());
     Assert.assertEquals(2,
       doc.selectNodes(

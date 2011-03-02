@@ -66,14 +66,17 @@ public class CreateActionRowCallbackHandler
     for (int i = 0; i < subqueries.size(); ++i)
     {
       final SubQuery subquery = subqueries.get(i);
-      final List<String> values = new ArrayList<String>();
+      final List<Object> values = new ArrayList<Object>();
       jdbcTemplate.query(subquery.getQuery(), properties,
-        new SubqueryRowCallbackHandler(values, subquery, subqueryConvertors.get(i)));
+        new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
       if (!values.isEmpty())
       {
-        final Object value = SubQuery.Type.DELIMITED.equals(subquery.getType())
-          ? StringUtils.join(values, subquery.getDelimiter())
-          : values;
+        final Object value =
+            values.size() == 1
+              ? values.get(0)
+              : SubQuery.Type.DELIMITED.equals(subquery.getType())
+                ? StringUtils.join(values, subquery.getDelimiter())
+                : values;
         properties.put(subquery.getField(), value);
       }
     }
@@ -110,15 +113,12 @@ public class CreateActionRowCallbackHandler
   private static final class SubqueryRowCallbackHandler
     implements RowCallbackHandler
   {
-    private final List<String> values;
-    private final SubQuery subquery;
+    private final List<Object> values;
     private final ResultSetConvertor convertor;
 
-    private SubqueryRowCallbackHandler(final List<String> values, final SubQuery subquery,
-      final ResultSetConvertor convertor)
+    private SubqueryRowCallbackHandler(final List<Object> values, final ResultSetConvertor convertor)
     {
       this.values = values;
-      this.subquery = subquery;
       this.convertor = convertor;
     }
 
@@ -127,12 +127,14 @@ public class CreateActionRowCallbackHandler
       throws SQLException
     {
       final Map<String, Object> row = convertor.getRowAsMap(rs);
-      if (row.size() != 1)
+      if (row.size() == 1)
       {
-        throw new RuntimeException("Subquery returned more than one column. "
-          + StringUtils.trimToEmpty(subquery.getQuery()));
+        values.add(row.entrySet().iterator().next().getValue());
       }
-      values.add((String) row.entrySet().iterator().next().getValue());
+      else
+      {
+        values.add(row);
+      }
     }
   }
 }
