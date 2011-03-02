@@ -12,13 +12,16 @@ public class SubQuery
   private final String query;
   private final String field;
   private final String delimiter;
+  private final String discriminator;
 
-  public SubQuery(final Type type, final String query, final String field, final String delimiter)
+  public SubQuery(final Type type, final String query, final String field, final String delimiter,
+    final String discriminator)
   {
     this.type = type;
     this.query = query;
     this.field = field;
     this.delimiter = delimiter;
+    this.discriminator = discriminator;
   }
 
   public Type getType()
@@ -39,5 +42,10 @@ public class SubQuery
   public String getDelimiter()
   {
     return delimiter;
+  }
+
+  public String getDiscriminator()
+  {
+    return discriminator;
   }
 }

@@ -201,7 +201,7 @@ public class SqlChangesetExtractorTest
       action.setIdColumn("id");
       action.setQuery("select * from subquery_test");
       action.setSubqueries(Arrays.asList(new SubQuery(SubQuery.Type.DELIMITED,
-        "select name from subquery_joined_test where parent_id=:id", "fish", ",")));
+        "select name from subquery_joined_test where parent_id=:id", "fish", ",", null)));
       extractor.setFilteredActions(CollectionsFactory.makeList(action));
     }
     final ChangesetWriter writer = mockery.mock(ChangesetWriter.class);

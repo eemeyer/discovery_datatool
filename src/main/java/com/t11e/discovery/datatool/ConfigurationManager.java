@@ -364,7 +364,8 @@ public class ConfigurationManager
       {
         delimiter = ",";
       }
-      subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, delimiter));
+      final String discriminator = subquery.valueOf("@discriminator");
+      subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, delimiter, discriminator));
     }
     builder.addPropertyValue("subqueries", subqueries);
   }
