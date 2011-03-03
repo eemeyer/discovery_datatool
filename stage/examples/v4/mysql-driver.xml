@@ -88,6 +88,12 @@
           <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
             select name from SubqueryColors where parent_id=:id order by name
           ]]></subquery>
+          <subquery field="address" discriminator="addr_type"><![CDATA[
+            select addr_type, street, city, state, zipcode from SubqueryAddress where parent_id=:id order by id
+          ]]></subquery>
+          <subquery field="products"><![CDATA[
+            select id, price, description from order_lines where order_id=:id order by id
+          ]]></subquery>
         </set-item>
         <remove-item idColumn="id">
           <query><![CDATA[
