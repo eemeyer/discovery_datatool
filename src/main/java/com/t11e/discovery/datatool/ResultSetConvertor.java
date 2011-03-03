@@ -20,8 +20,8 @@ public class ResultSetConvertor
 {
   private final boolean lowerCaseColumnNames;
   private final Set<String> jsonColumns;
-  private ResultSetMetaData metadata;
   private IColumnProcessor[] columnProcessors;
+  private String[] columnNames;
 
   public ResultSetConvertor(final boolean lowerCaseColumnNames, final Set<String> jsonColumns)
   {
@@ -35,16 +35,13 @@ public class ResultSetConvertor
     lazyInitialize(rs);
     final Map<String, Object> properties;
     properties = new LinkedHashMap<String, Object>();
-    for (int column = 1; column < columnProcessors.length; column++)
+    for (int idx = 0; idx < columnProcessors.length; ++idx)
     {
-      final IColumnProcessor columnProcessor = columnProcessors[column];
+      final int column = idx + 1;
+      final IColumnProcessor columnProcessor = columnProcessors[idx];
       if (columnProcessor != null)
       {
-        String name = metadata.getColumnName(column);
-        if (lowerCaseColumnNames)
-        {
-          name = name.toLowerCase();
-        }
+        final String name = columnNames[idx];
         final Object value = columnProcessor.processColumn(rs, column);
         if (value != null)
         {
@@ -58,23 +55,21 @@ public class ResultSetConvertor
   private void lazyInitialize(final ResultSet rs)
     throws SQLException
   {
-    if (metadata == null)
+    if (columnProcessors == null)
     {
-      metadata = rs.getMetaData();
-      columnProcessors = getColumnProcessors(metadata);
+      final ResultSetMetaData metaData = rs.getMetaData();
+      final IColumnProcessor[] processors = new IColumnProcessor[metaData.getColumnCount()];
+      final String[] names = new String[processors.length];
+      for (int idx = 0; idx < processors.length; idx++)
+      {
+        final int column = idx + 1;
+        processors[idx] = getColumnProcessor(metaData, column);
+        final String columnName = metaData.getColumnName(column);
+        names[idx] = lowerCaseColumnNames ? columnName.toLowerCase() : columnName;
+      }
+      columnProcessors = processors;
+      columnNames = names;
     }
-  }
-
-  private IColumnProcessor[] getColumnProcessors(
-    final ResultSetMetaData md)
-    throws SQLException
-  {
-    final IColumnProcessor[] output = new IColumnProcessor[md.getColumnCount() + 1];
-    for (int column = 1; column < output.length; column++)
-    {
-      output[column] = getColumnProcessor(md, column);
-    }
-    return output;
   }
 
   private IColumnProcessor getColumnProcessor(
