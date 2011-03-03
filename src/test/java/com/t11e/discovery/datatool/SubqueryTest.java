@@ -180,8 +180,6 @@ public class SubqueryTest
       .getText());
 
     Assert.assertNull(doc.selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='address']"));
-
-    // TODO: show that multiple rows for the same discriminator replaces (last one wins)
   }
 
 }

@@ -37,5 +37,6 @@ create table SubqueryAddress (
 
 insert into SubqueryAddress (parent_id, discriminator, street) values
   (1, 'biz', '1 main st'),
+  (2, 'biz', '123 hidden by second biz address'),
   (2, 'biz', '123 main st'),
   (2, 'per', '456 main st');
