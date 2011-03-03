@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,13 +72,39 @@ public class CreateActionRowCallbackHandler
         new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
       if (!values.isEmpty())
       {
-        final Object value =
-            values.size() == 1
-              ? values.get(0)
-              : SubQuery.Type.DELIMITED.equals(subquery.getType())
-                ? StringUtils.join(values, subquery.getDelimiter())
-                : values;
-        properties.put(subquery.getField(), value);
+        if (StringUtils.isNotBlank(subquery.getDiscriminator()))
+        {
+          final Map<String, Object> groupedbyDiscriminator = new LinkedHashMap<String, Object>();
+          for (final Object value : values)
+          {
+            @SuppressWarnings("unchecked")
+            final Map<String, Object> row = (Map<String, Object>) value;
+            final String discriminatorValue = (String) row.remove(subquery.getDiscriminator());
+            if (discriminatorValue != null)
+            {
+              groupedbyDiscriminator.put(discriminatorValue, row);
+            }
+          }
+          if (!groupedbyDiscriminator.isEmpty())
+          {
+            properties.put(subquery.getField(), groupedbyDiscriminator);
+          }
+        }
+        else
+        {
+          final Object value;
+          if (values.size() == 1)
+          {
+            value = values.get(0);
+          }
+          else
+          {
+            value = SubQuery.Type.DELIMITED.equals(subquery.getType())
+              ? StringUtils.join(values, subquery.getDelimiter())
+              : values;
+          }
+          properties.put(subquery.getField(), value);
+        }
       }
     }
     try

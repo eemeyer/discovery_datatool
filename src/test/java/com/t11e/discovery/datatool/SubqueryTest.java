@@ -155,31 +155,33 @@ public class SubqueryTest
 
     Assert.assertEquals("1 main st",
       doc.selectSingleNode(
-      "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='street']/string/text()")
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='biz']/struct/entry[@name='street']/string/text()")
       .getText());
     Assert.assertNull(
       doc.selectSingleNode(
-      "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='discriminator']/string"));
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='address']/struct/entry[@name='biz']/struct/entry[@name='discriminator']"));
 
     Assert.assertEquals(2,
-      doc.selectNodes("/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element").size());
+      doc.selectNodes("/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/struct/entry").size());
 
     Assert.assertEquals(
       "123 main st",
       doc.selectSingleNode(
-      "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element[1]/struct/entry[@name='street']/string/text()")
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/struct/entry[@name='biz']/struct/entry[@name='street']/string/text()")
       .getText());
     Assert.assertNull(
       doc.selectSingleNode(
-      "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/array/element[1]/struct/entry[@name='discriminator']/string"));
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/struct/entry[@name='biz']/struct/entry[@name='discriminator']"));
 
     Assert.assertEquals(
       "456 main st",
       doc.selectSingleNode(
-      "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element[2]/struct/entry[@name='street']/string/text()")
+            "/changeset/set-item[@id='2']/properties/struct/entry[@name='address']/struct/entry[@name='per']/struct/entry[@name='street']/string/text()")
       .getText());
 
     Assert.assertNull(doc.selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='address']"));
+
+    // TODO: show that multiple rows for the same discriminator replaces (last one wins)
   }
 
 }
