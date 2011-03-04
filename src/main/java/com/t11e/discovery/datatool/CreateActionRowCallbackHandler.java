@@ -8,16 +8,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 public class CreateActionRowCallbackHandler
   implements RowCallbackHandler
 {
+  private static final Logger logger = Logger.getLogger(CreateActionRowCallbackHandler.class.getName());
   private final ChangesetWriter writer;
   private final String idColumn;
   private final String idPrefix;
@@ -26,6 +30,9 @@ public class CreateActionRowCallbackHandler
   private final NamedParameterJdbcOperations jdbcTemplate;
   private final ResultSetConvertor resultSetConvertor;
   private final List<ResultSetConvertor> subqueryConvertors;
+  private final boolean shouldRecordTimings;
+  private long totalTime;
+  private int numSubQueries;
 
   public CreateActionRowCallbackHandler(
     final NamedParameterJdbcOperations jdbcTemplate,
@@ -35,13 +42,15 @@ public class CreateActionRowCallbackHandler
     final String idSuffix,
     final boolean lowerCaseColumnNames,
     final Set<String> jsonColumns,
-    final List<SubQuery> subqueries)
+    final List<SubQuery> subqueries,
+    final boolean shouldRecordTimings)
   {
     this.jdbcTemplate = jdbcTemplate;
     this.writer = writer;
     this.idColumn = idColumn;
     this.idPrefix = idPrefix;
     this.idSuffix = idSuffix;
+    this.shouldRecordTimings = shouldRecordTimings;
     this.subqueries = subqueries != null ? subqueries : Collections.<SubQuery> emptyList();
     resultSetConvertor = new ResultSetConvertor(lowerCaseColumnNames, jsonColumns);
     if (this.subqueries.isEmpty())
@@ -68,8 +77,12 @@ public class CreateActionRowCallbackHandler
     {
       final SubQuery subquery = subqueries.get(i);
       final List<Object> values = new ArrayList<Object>();
-      jdbcTemplate.query(subquery.getQuery(), properties,
-        new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
+      {
+        final StopWatch watch = StopWatchHelper.startTimer(shouldRecordTimings);
+        jdbcTemplate.query(subquery.getQuery(), properties,
+          new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
+        recordQueryTime(watch);
+      }
       if (!values.isEmpty())
       {
         if (StringUtils.isNotBlank(subquery.getDiscriminator()))
@@ -117,6 +130,20 @@ public class CreateActionRowCallbackHandler
     }
   }
 
+  private void recordQueryTime(final StopWatch watch)
+  {
+    if (shouldRecordTimings && watch != null)
+    {
+      watch.stop();
+      totalTime += watch.getTime();
+      ++numSubQueries;
+      if (logger.isLoggable(Level.FINEST))
+      {
+        logger.finest("Subquery took [" + watch.getTime() + "]ms [" + watch + "]");
+      }
+    }
+  }
+
   private String getId(final ResultSet rs)
     throws SQLException
   {
@@ -135,6 +162,16 @@ public class CreateActionRowCallbackHandler
       id = builder.toString();
     }
     return id;
+  }
+
+  public long getTotalTime()
+  {
+    return totalTime;
+  }
+
+  public int getNumSubQueries()
+  {
+    return numSubQueries;
   }
 
   private static final class SubqueryRowCallbackHandler
