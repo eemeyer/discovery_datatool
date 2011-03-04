@@ -15,6 +15,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
@@ -79,8 +80,15 @@ public class CreateActionRowCallbackHandler
       final List<Object> values = new ArrayList<Object>();
       {
         final StopWatch watch = StopWatchHelper.startTimer(shouldRecordTimings);
-        jdbcTemplate.query(subquery.getQuery(), properties,
-          new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
+        try
+        {
+          jdbcTemplate.query(subquery.getQuery(), properties,
+            new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
+        }
+        catch (final InvalidDataAccessApiUsageException e)
+        {
+          throw new RuntimeException(e.getMessage() + " (available keys: " + properties.keySet() + ")", e);
+        }
         recordQueryTime(watch);
       }
       if (!values.isEmpty())
