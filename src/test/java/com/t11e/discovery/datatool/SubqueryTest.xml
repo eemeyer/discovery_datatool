@@ -8,21 +8,21 @@
   <publishers>
     <sqlPublisher name="test-snapshot-varchar" dataSource="dataSource">
       <snapshot>
-        <set-item idColumn="id">
+        <set-item idColumn="IdEnT">
           <query><![CDATA[
-          select * from SubqueryContent
+          select id as Ident from SubqueryContent
         ]]></query>
           <subquery field="color" type="delimited"><![CDATA[
-          select name from SubqueryColors where parent_id=:id order by name
+          select name from SubqueryColors where parent_id=:IDENT order by name
         ]]></subquery>
           <subquery field="color-default"><![CDATA[
-          select name from SubqueryColors where parent_id=:id order by name
+          select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
           <subquery field="color-array" type="array"><![CDATA[
-          select name from SubqueryColors where parent_id=:id order by name
+          select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
           <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
-          select name from SubqueryColors where parent_id=:id order by name
+          select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
         </set-item>
         <remove-item idColumn="id">
