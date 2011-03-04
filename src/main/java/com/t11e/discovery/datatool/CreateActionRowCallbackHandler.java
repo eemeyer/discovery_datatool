@@ -74,6 +74,7 @@ public class CreateActionRowCallbackHandler
   {
     final String id = getId(rs);
     final Map<String, Object> properties = resultSetConvertor.getRowAsMap(rs);
+    final CaseInsensitveParameterSource subqueryParams = new CaseInsensitveParameterSource(properties);
     for (int i = 0; i < subqueries.size(); ++i)
     {
       final SubQuery subquery = subqueries.get(i);
@@ -82,7 +83,7 @@ public class CreateActionRowCallbackHandler
         final StopWatch watch = StopWatchHelper.startTimer(shouldRecordTimings);
         try
         {
-          jdbcTemplate.query(subquery.getQuery(), properties,
+          jdbcTemplate.query(subquery.getQuery(), subqueryParams,
             new SubqueryRowCallbackHandler(values, subqueryConvertors.get(i)));
         }
         catch (final InvalidDataAccessApiUsageException e)

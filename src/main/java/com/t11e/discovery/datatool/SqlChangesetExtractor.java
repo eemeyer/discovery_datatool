@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +16,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -104,10 +103,10 @@ public class SqlChangesetExtractor
     final Date end)
   {
     final boolean logTiming = logger.isLoggable(Level.FINEST);
-    final Map<String, Object> params = new HashMap<String, Object>();
-    params.put("start", start);
-    params.put("end", end);
-    params.put("kind", kind);
+    final SqlParameterSource params = new CaseInsensitveParameterSource()
+      .addValue("start", start)
+      .addValue("end", end)
+      .addValue("kind", kind);
     final RowCallbackHandler callbackHandler;
     if ("create".equals(sqlAction.getAction()))
     {
