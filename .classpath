@@ -107,5 +107,6 @@
 	<classpathentry kind="lib" path="lib/stax2-api-3.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/woodstox-core-asl-4.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/jopt-simple-3.2.jar" sourcepath="lib/jopt-simple-3.2-sources.jar"/>
+	<classpathentry kind="lib" path="stage/drivers/mysql-connector-java-5.1.10-bin.jar"/>
 	<classpathentry kind="output" path="build.eclipse"/>
 </classpath>
