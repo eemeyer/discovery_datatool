@@ -64,7 +64,7 @@ public class ResultSetConvertor
       {
         final int column = idx + 1;
         processors[idx] = getColumnProcessor(metaData, column);
-        final String columnName = metaData.getColumnName(column);
+        final String columnName = metaData.getColumnLabel(column);
         names[idx] = lowerCaseColumnNames ? columnName.toLowerCase() : columnName;
       }
       columnProcessors = processors;
