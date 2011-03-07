@@ -158,7 +158,8 @@
       <simpleContent>
         <extension base="string">
           <attribute name="delimiter" type="string" use="optional" />
-          <attribute name="field" type="string" />
+          <attribute name="field" type="string" use="optional"/>
+          <attribute name="fieldPrefix" type="string" use="optional"/>
           <attribute name="discriminator" type="string" use="optional"/>
           <attribute name="type" type="tns:SubQueryTypeType" default="array" />
         </extension>

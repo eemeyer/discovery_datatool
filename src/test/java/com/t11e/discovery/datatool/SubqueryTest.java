@@ -129,6 +129,14 @@ public class SubqueryTest
       doc.selectSingleNode(
       "/changeset/set-item[@id='1']/properties/struct/entry[@name='color']/struct/entry[@name='renamed']/string/text()")
       .getText());
+    Assert.assertEquals("red",
+      doc.selectSingleNode(
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='color_delimited_name']/string/text()")
+        .getText());
+    Assert.assertEquals("10",
+      doc.selectSingleNode(
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='color_delimited_renamed']/string/text()")
+        .getText());
 
     Assert.assertEquals(2,
       doc.selectNodes("/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element").size());
@@ -141,6 +149,15 @@ public class SubqueryTest
       doc.selectSingleNode(
       "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element[2]/struct/entry[@name='name']/string/text()")
       .getText());
+
+    Assert.assertEquals("orange,yellow",
+      doc.selectSingleNode(
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='color_delimited_name']/string/text()")
+        .getText());
+    Assert.assertEquals("20,30",
+      doc.selectSingleNode(
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='color_delimited_renamed']/string/text()")
+        .getText());
 
     Assert.assertNull(doc.selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='color']"));
   }
