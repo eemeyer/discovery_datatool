@@ -11,15 +11,18 @@ public class SubQuery
   private final Type type;
   private final String query;
   private final String field;
+  private final String fieldPrefix;
   private final String delimiter;
   private final String discriminator;
 
-  public SubQuery(final Type type, final String query, final String field, final String delimiter,
+  public SubQuery(final Type type, final String query, final String field, final String fieldPrefix,
+    final String delimiter,
     final String discriminator)
   {
     this.type = type;
     this.query = query;
     this.field = field;
+    this.fieldPrefix = fieldPrefix;
     this.delimiter = delimiter;
     this.discriminator = discriminator;
   }
@@ -37,6 +40,11 @@ public class SubQuery
   public String getField()
   {
     return field;
+  }
+
+  public String getFieldPrefix()
+  {
+    return fieldPrefix;
   }
 
   public String getDelimiter()

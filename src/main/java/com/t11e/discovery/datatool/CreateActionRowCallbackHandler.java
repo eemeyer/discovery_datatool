@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,7 +79,7 @@ public class CreateActionRowCallbackHandler
     for (int i = 0; i < subqueries.size(); ++i)
     {
       final SubQuery subquery = subqueries.get(i);
-      final List<Object> values = new ArrayList<Object>();
+      final List<Map<String, Object>> values = new ArrayList<Map<String, Object>>();
       {
         final StopWatch watch = StopWatchHelper.startTimer(shouldRecordTimings);
         try
@@ -97,10 +98,8 @@ public class CreateActionRowCallbackHandler
         if (StringUtils.isNotBlank(subquery.getDiscriminator()))
         {
           final Map<String, Object> groupedbyDiscriminator = new LinkedHashMap<String, Object>();
-          for (final Object value : values)
+          for (final Map<String, Object> row : values)
           {
-            @SuppressWarnings("unchecked")
-            final Map<String, Object> row = (Map<String, Object>) value;
             final String discriminatorValue = (String) row.remove(subquery.getDiscriminator());
             if (discriminatorValue != null)
             {
@@ -112,20 +111,74 @@ public class CreateActionRowCallbackHandler
             properties.put(subquery.getField(), groupedbyDiscriminator);
           }
         }
-        else
+        else if (StringUtils.isNotBlank(subquery.getFieldPrefix()))
         {
-          final Object value;
           if (values.size() == 1)
           {
-            value = values.get(0);
+            final Map<String, Object> row = values.get(0);
+            for (final Entry<String, Object> entry : row.entrySet())
+            {
+              properties.put(subquery.getFieldPrefix() + entry.getKey(), entry.getValue());
+            }
           }
-          else
+          else if (values.size() > 1)
           {
-            value = SubQuery.Type.DELIMITED.equals(subquery.getType())
-              ? StringUtils.join(values, subquery.getDelimiter())
-              : values;
+            final Map<String, List<Object>> flattened = new LinkedHashMap<String, List<Object>>();
+            for (final Map<String, Object> row : values)
+            {
+              for (final Entry<String, Object> columnValue : row.entrySet())
+              {
+                if (!flattened.containsKey(columnValue.getKey()))
+                {
+                  flattened.put(columnValue.getKey(), new ArrayList<Object>(values.size()));
+                }
+                flattened.get(columnValue.getKey()).add(columnValue.getValue());
+              }
+            }
+            for (final Entry<String, List<Object>> flattenedValues : flattened.entrySet())
+            {
+              properties.put(subquery.getFieldPrefix() + flattenedValues.getKey(),
+                SubQuery.Type.DELIMITED.equals(subquery.getType())
+                  ? StringUtils.join(flattenedValues.getValue(), subquery.getDelimiter())
+                  : flattenedValues.getValue());
+            }
           }
-          properties.put(subquery.getField(), value);
+        }
+        // use single field
+        else
+        {
+          final boolean multiColumn = values.size() > 0 && values.get(0).size() != 1;
+          if (values.size() == 1)
+          {
+            final Map<String, Object> row = values.get(0);
+            if (multiColumn)
+            {
+              properties.put(subquery.getField(), row);
+            }
+            else
+            {
+              properties.put(subquery.getField(), row.values().iterator().next());
+            }
+          }
+          else if (values.size() > 1)
+          {
+            if (multiColumn)
+            {
+              properties.put(subquery.getField(), values);
+            }
+            else
+            {
+              final List<Object> flattened = new ArrayList<Object>(values.size());
+              for (final Map<String, Object> row : values)
+              {
+                flattened.add(row.values().iterator().next());
+              }
+              properties.put(subquery.getField(),
+                SubQuery.Type.DELIMITED.equals(subquery.getType())
+                  ? StringUtils.join(flattened, subquery.getDelimiter())
+                  : flattened);
+            }
+          }
         }
       }
     }
@@ -186,10 +239,10 @@ public class CreateActionRowCallbackHandler
   private static final class SubqueryRowCallbackHandler
     implements RowCallbackHandler
   {
-    private final List<Object> values;
+    private final List<Map<String, Object>> values;
     private final ResultSetConvertor convertor;
 
-    private SubqueryRowCallbackHandler(final List<Object> values, final ResultSetConvertor convertor)
+    private SubqueryRowCallbackHandler(final List<Map<String, Object>> values, final ResultSetConvertor convertor)
     {
       this.values = values;
       this.convertor = convertor;
@@ -199,15 +252,7 @@ public class CreateActionRowCallbackHandler
     public void processRow(final ResultSet rs)
       throws SQLException
     {
-      final Map<String, Object> row = convertor.getRowAsMap(rs);
-      if (row.size() == 1)
-      {
-        values.add(row.entrySet().iterator().next().getValue());
-      }
-      else
-      {
-        values.add(row);
-      }
+      values.add(convertor.getRowAsMap(rs));
     }
   }
 }

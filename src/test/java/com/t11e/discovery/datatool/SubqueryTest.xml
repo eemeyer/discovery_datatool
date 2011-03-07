@@ -75,7 +75,7 @@
           <subquery field="color"><![CDATA[
           select name, asnumber as renamed from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
-          <subquery fieldPrefix="color_delimited_" delimiter=","><![CDATA[
+          <subquery fieldPrefix="color_delimited_" delimiter="," type="delimited"><![CDATA[
         select name, asnumber as renamed from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
         </set-item>
