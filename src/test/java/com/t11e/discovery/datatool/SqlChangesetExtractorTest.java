@@ -562,6 +562,49 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
+  public void testSubQueryDelimitedNoFieldMultiColumns()
+    throws XMLStreamException
+  {
+    final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
+    extractor.setDataSource(dataSource);
+    {
+      final SqlAction action = new SqlAction();
+      action.setAction("create");
+      action.setIdColumn("id");
+      action.setQuery("select * from subquery_test");
+      action.setSubqueries(Arrays.asList(new SubQuery(SubQuery.Type.DELIMITED,
+        "select parent_id as fishid, name as fishname from subquery_joined_test where parent_id=:id", null, null, ",",
+        null)));
+      extractor.setFilteredActions(CollectionsFactory.makeList(action));
+    }
+    final ChangesetWriter writer = mockery.mock(ChangesetWriter.class);
+    mockery.checking(new Expectations()
+    {
+      {
+        never(writer);
+        oneOf(writer).setItem(
+          "1",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "1",
+            "fishid", "1,1",
+            "fishname", "redfish,bluefish"));
+        oneOf(writer).setItem(
+          "2",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "2"));
+        oneOf(writer).setItem(
+          "3",
+          CollectionsFactory.<String, Object> makeMap(
+            "id", "3",
+            "fishid", "3,3",
+            "fishname", "onefish,twofish"));
+      }
+    });
+    extractor.writeChangeset(writer, "snapshot", null, null);
+    mockery.assertIsSatisfied();
+  }
+
+  @Test
   public void testSubQueryArrayNoField()
     throws XMLStreamException
   {
