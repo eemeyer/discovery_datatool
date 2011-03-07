@@ -1,5 +1,9 @@
 package com.t11e.discovery.datatool;
 
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -114,21 +118,24 @@ public class SqlChangesetExtractorTest
             "id", "2",
             "col_fixed", "",
             "col_string", "",
-            "col_clob", ""));
+            "col_clob", "",
+            "col_blob", ""));
         oneOf(writer).setItem(
           "3",
           CollectionsFactory.<String, String> makeMap(
             "id", "3",
             "col_fixed", "a",
             "col_string", "b",
-            "col_clob", "c"));
+            "col_clob", "c",
+            "col_blob", "d"));
         oneOf(writer).setItem(
           "4",
           CollectionsFactory.<String, String> makeMap(
             "id", "4",
             "col_fixed", "a",
             "col_string", "b",
-            "col_clob", "c"));
+            "col_clob", "c",
+            "col_blob", "d"));
       }
     });
     testExtractor(writer, "string_column_test");
@@ -697,5 +704,14 @@ public class SqlChangesetExtractorTest
     }
     extractor.writeChangeset(writer, "snapshot", null, null);
     mockery.assertIsSatisfied();
+  }
+
+  public static Blob makeBlob(final String string)
+    throws SQLException
+  {
+    final Connection conn = DriverManager.getConnection("jdbc:default:connection");
+    final Blob blob = conn.createBlob();
+    blob.setBytes(1, string.getBytes());
+    return blob;
   }
 }
