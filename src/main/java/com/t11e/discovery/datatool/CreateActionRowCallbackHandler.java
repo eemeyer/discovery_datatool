@@ -111,14 +111,16 @@ public class CreateActionRowCallbackHandler
             properties.put(subquery.getField(), groupedbyDiscriminator);
           }
         }
-        else if (StringUtils.isNotBlank(subquery.getFieldPrefix()))
+        else if (StringUtils.isBlank(subquery.getField()))
         {
+          final String fieldPrefix = StringUtils.isNotBlank(subquery.getFieldPrefix()) ? subquery.getFieldPrefix() : "";
           if (values.size() == 1)
+
           {
             final Map<String, Object> row = values.get(0);
             for (final Entry<String, Object> entry : row.entrySet())
             {
-              properties.put(subquery.getFieldPrefix() + entry.getKey(), entry.getValue());
+              properties.put(fieldPrefix + entry.getKey(), entry.getValue());
             }
           }
           else if (values.size() > 1)
@@ -137,7 +139,7 @@ public class CreateActionRowCallbackHandler
             }
             for (final Entry<String, List<Object>> flattenedValues : flattened.entrySet())
             {
-              properties.put(subquery.getFieldPrefix() + flattenedValues.getKey(),
+              properties.put(fieldPrefix + flattenedValues.getKey(),
                 SubQuery.Type.DELIMITED.equals(subquery.getType())
                   ? StringUtils.join(flattenedValues.getValue(), subquery.getDelimiter())
                   : flattenedValues.getValue());
