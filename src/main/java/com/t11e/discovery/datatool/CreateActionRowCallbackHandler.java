@@ -155,7 +155,36 @@ public class CreateActionRowCallbackHandler
             final Map<String, Object> row = values.get(0);
             if (multiColumn)
             {
-              properties.put(subquery.getField(), row);
+              final Map<String, List<Object>> flattened = new LinkedHashMap<String, List<Object>>();
+              for (final Entry<String, Object> columnValue : row.entrySet())
+              {
+                if (!flattened.containsKey(columnValue.getKey()))
+                {
+                  flattened.put(columnValue.getKey(), new ArrayList<Object>(values.size()));
+                }
+                flattened.get(columnValue.getKey()).add(columnValue.getValue());
+              }
+              final Object value;
+              if (SubQuery.Type.DELIMITED.equals(subquery.getType()))
+              {
+                final Map<String, String> combined = new LinkedHashMap<String, String>();
+                value = combined;
+                for (final Entry<String, List<Object>> flattenedValues : flattened.entrySet())
+                {
+                  combined.put(flattenedValues.getKey(), StringUtils.join(flattenedValues.getValue(), subquery.getDelimiter()));
+                }
+              }
+              else
+              {
+                final Map<String, Object> remapped = new LinkedHashMap<String, Object>(flattened.size());
+                for (final Entry<String, List<Object>> entry : flattened.entrySet())
+                {
+                  final List<Object> entryValue = entry.getValue();
+                  remapped.put(entry.getKey(), entryValue.size() == 1 ? entryValue.get(0) : entryValue);
+                }
+                value = remapped;
+              }
+              properties.put(subquery.getField(), value);
             }
             else
             {
@@ -166,7 +195,33 @@ public class CreateActionRowCallbackHandler
           {
             if (multiColumn)
             {
-              properties.put(subquery.getField(), values);
+              final Object value;
+              if (SubQuery.Type.DELIMITED.equals(subquery.getType()))
+              {
+                final Map<String, List<Object>> flattened = new LinkedHashMap<String, List<Object>>();
+                for (final Map<String, Object> row : values)
+                {
+                  for (final Entry<String, Object> columnValue : row.entrySet())
+                  {
+                    if (!flattened.containsKey(columnValue.getKey()))
+                    {
+                      flattened.put(columnValue.getKey(), new ArrayList<Object>(values.size()));
+                    }
+                    flattened.get(columnValue.getKey()).add(columnValue.getValue());
+                  }
+                }
+                final Map<String, String> combined = new LinkedHashMap<String, String>();
+                value = combined;
+                for (final Entry<String, List<Object>> flattenedValues : flattened.entrySet())
+                {
+                  combined.put(flattenedValues.getKey(), StringUtils.join(flattenedValues.getValue(), subquery.getDelimiter()));
+                }
+              }
+              else
+              {
+                value = values;
+              }
+              properties.put(subquery.getField(), value);
             }
             else
             {

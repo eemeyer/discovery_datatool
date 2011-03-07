@@ -436,7 +436,6 @@ public class SqlChangesetExtractorTest
     mockery.assertIsSatisfied();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testSubQueryDelimitedFieldMultiColumns()
     throws XMLStreamException
@@ -461,9 +460,7 @@ public class SqlChangesetExtractorTest
           "1",
           CollectionsFactory.<String, Object> makeMap(
             "id", "1",
-            "fish", Arrays.asList(
-              CollectionsFactory.<String, Object> makeMap("id", "1", "name", "redfish"),
-              CollectionsFactory.<String, Object> makeMap("id", "1", "name", "bluefish"))));
+            "fish", CollectionsFactory.<String, Object> makeMap("id", "1,1", "name", "redfish,bluefish")));
         oneOf(writer).setItem(
           "2",
           CollectionsFactory.<String, Object> makeMap(
@@ -472,9 +469,7 @@ public class SqlChangesetExtractorTest
           "3",
           CollectionsFactory.<String, Object> makeMap(
             "id", "3",
-            "fish", Arrays.asList(
-              CollectionsFactory.<String, Object> makeMap("id", "3", "name", "onefish"),
-              CollectionsFactory.<String, Object> makeMap("id", "3", "name", "twofish"))));
+            "fish", CollectionsFactory.<String, Object> makeMap("id", "3,3", "name", "onefish,twofish")));
       }
     });
     extractor.writeChangeset(writer, "snapshot", null, null);
