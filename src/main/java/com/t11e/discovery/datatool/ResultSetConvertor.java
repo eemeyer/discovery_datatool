@@ -8,8 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.t11e.discovery.datatool.column.BlobColumnProcessor;
-import com.t11e.discovery.datatool.column.BlobJsonColumnProcessor;
 import com.t11e.discovery.datatool.column.BooleanColumnProcessor;
 import com.t11e.discovery.datatool.column.DateColumnProcessor;
 import com.t11e.discovery.datatool.column.IColumnProcessor;
@@ -122,28 +120,16 @@ public class ResultSetConvertor
       case java.sql.Types.TIMESTAMP:
         output = TimestampColumnProcessor.INSTANCE;
         break;
-      case java.sql.Types.BLOB:
       case java.sql.Types.BINARY:
       case java.sql.Types.VARBINARY:
       case java.sql.Types.LONGVARBINARY:
-      {
-        final String columnName = md.getColumnName(column);
-        if (columnName != null && jsonColumns.contains(columnName.toLowerCase()))
-        {
-          output = BlobJsonColumnProcessor.INSTANCE;
-        }
-        else
-        {
-          output = BlobColumnProcessor.INSTANCE;
-        }
-        break;
-      }
       case java.sql.Types.NULL:
       case java.sql.Types.OTHER:
       case java.sql.Types.JAVA_OBJECT:
       case java.sql.Types.DISTINCT:
       case java.sql.Types.STRUCT:
       case java.sql.Types.ARRAY:
+      case java.sql.Types.BLOB:
       case java.sql.Types.REF:
       case java.sql.Types.DATALINK:
       default:
