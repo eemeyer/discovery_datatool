@@ -64,22 +64,22 @@ public class SubqueryTest
 
   }
 
-  private void assertColorArraySubquery(final Document doc, final String fieldName)
+  private void assertColorArraySubquery(final Document doc, final String propertyName)
   {
     Assert.assertEquals("red",
       doc.selectSingleNode(
-        "/changeset/set-item[@id='1']/properties/struct/entry[@name='" + fieldName + "']/string/text()")
+        "/changeset/set-item[@id='1']/properties/struct/entry[@name='" + propertyName + "']/string/text()")
         .getText());
     Assert.assertEquals(2,
       doc.selectNodes(
-        "/changeset/set-item[@id='2']/properties/struct/entry[@name='" + fieldName + "']/array/element/string/text()")
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='" + propertyName + "']/array/element/string/text()")
         .size());
     Assert.assertEquals(
       Arrays.asList("orange", "yellow"),
       nodesAsStrings(doc,
-        "/changeset/set-item[@id='2']/properties/struct/entry[@name='" + fieldName + "']/array/element/string/text()"));
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='" + propertyName + "']/array/element/string/text()"));
     Assert.assertNull(doc
-      .selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='" + fieldName + "']"));
+      .selectSingleNode("/changeset/set-item[@id='3']/properties/struct/entry[@name='" + propertyName + "']"));
   }
 
   @Test

@@ -42,10 +42,10 @@
           where last_updated >= :start and last_updated < :end
         ]]></query>
         <!-- type="delimited" must only return a single column, or the pull will fail with an exception -->
-        <subquery field="categories" type="delimited" delimiter=","><![CDATA[
+        <subquery property="categories" type="delimited" delimiter=","><![CDATA[
           select name from content_category inner join Content on content_category._content_id=:id
         ]]></subquery>
-        <subquery field="categories_array" type="array"><![CDATA[
+        <subquery property="categories_array" type="array"><![CDATA[
           select name from content_category inner join Content on content_category._content_id=:id
         ]]></subquery>
       </action>

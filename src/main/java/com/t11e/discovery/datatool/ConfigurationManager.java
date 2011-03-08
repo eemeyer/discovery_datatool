@@ -353,11 +353,11 @@ public class ConfigurationManager
     for (final Node subquery : (List<Node>) parentElementToQuery.selectNodes("c:subquery".replace("c:", ns)))
     {
       final String sql = subquery.getText();
-      final String field = subquery.valueOf("@field");
-      final String fieldPrefix = subquery.valueOf("@fieldPrefix");
-      if (StringUtils.isNotBlank(field) && StringUtils.isNotBlank(fieldPrefix))
+      final String property = subquery.valueOf("@property");
+      final String propertyPrefix = subquery.valueOf("@propertyPrefix");
+      if (StringUtils.isNotBlank(property) && StringUtils.isNotBlank(propertyPrefix))
       {
-        throw new RuntimeException("Subqueries cannot specify both field and fieldPrefix: " + subquery.asXML());
+        throw new RuntimeException("Subqueries cannot specify both property and propertyPrefix: " + subquery.asXML());
       }
       String type = subquery.valueOf("@type");
       if (StringUtils.isBlank(type))
@@ -370,7 +370,7 @@ public class ConfigurationManager
         delimiter = ",";
       }
       final String discriminator = subquery.valueOf("@discriminator");
-      subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, field, fieldPrefix, delimiter,
+      subqueries.add(new SubQuery(SubQuery.Type.valueOf(type.toUpperCase()), sql, property, propertyPrefix, delimiter,
         discriminator));
     }
     builder.addPropertyValue("subqueries", subqueries);

@@ -190,7 +190,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedField()
+  public void testSubQueryDelimitedProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -230,7 +230,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryArrayField()
+  public void testSubQueryArrayProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -270,7 +270,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryNonDelimitedField()
+  public void testSubQueryNonDelimitedProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -310,7 +310,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedFieldPrefix()
+  public void testSubQueryDelimitedPropertyPrefix()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -350,7 +350,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedFieldPrefixMultiColumns()
+  public void testSubQueryDelimitedPropertyPrefixMultiColumns()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -393,7 +393,7 @@ public class SqlChangesetExtractorTest
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testSubQueryArrayFieldMultiColumns()
+  public void testSubQueryArrayPropertyMultiColumns()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -437,7 +437,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedFieldMultiColumns()
+  public void testSubQueryDelimitedPropertyMultiColumns()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -477,7 +477,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryNonDelimitedNoField()
+  public void testSubQueryNonDelimitedNoProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -517,7 +517,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedNoField()
+  public void testSubQueryDelimitedNoProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -557,7 +557,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryDelimitedNoFieldMultiColumns()
+  public void testSubQueryDelimitedNoPropertyMultiColumns()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -600,7 +600,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryArrayNoField()
+  public void testSubQueryArrayNoProperty()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();
@@ -640,7 +640,7 @@ public class SqlChangesetExtractorTest
   }
 
   @Test
-  public void testSubQueryArrayNoFieldMultiColumns()
+  public void testSubQueryArrayNoPropertyMultiColumns()
     throws XMLStreamException
   {
     final SqlChangesetExtractor extractor = new SqlChangesetExtractor();

@@ -12,16 +12,16 @@
           <query><![CDATA[
           select id as Ident from SubqueryContent
         ]]></query>
-          <subquery field="color" type="delimited"><![CDATA[
+          <subquery property="color" type="delimited"><![CDATA[
           select name from SubqueryColors where parent_id=:IDENT order by name
         ]]></subquery>
-          <subquery field="color-default"><![CDATA[
+          <subquery property="color-default"><![CDATA[
           select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
-          <subquery field="color-array" type="array"><![CDATA[
+          <subquery property="color-array" type="array"><![CDATA[
           select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
-          <subquery field="color-delimited" type="delimited" delimiter="|"><![CDATA[
+          <subquery property="color-delimited" type="delimited" delimiter="|"><![CDATA[
           select name from SubqueryColors where parent_id=:ident order by name
         ]]></subquery>
         </set-item>
@@ -38,7 +38,7 @@
           <query><![CDATA[
           select * from SubqueryContent
         ]]></query>
-          <subquery field="color" type="delimited"><![CDATA[
+          <subquery property="color" type="delimited"><![CDATA[
           select asnumber from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
         </set-item>
@@ -55,7 +55,7 @@
           <query><![CDATA[
           select * from SubqueryContent
         ]]></query>
-          <subquery field="color" type="delimited"><![CDATA[
+          <subquery property="color" type="delimited"><![CDATA[
           select asdate from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
         </set-item>
@@ -72,10 +72,10 @@
           <query><![CDATA[
           select * from SubqueryContent
         ]]></query>
-          <subquery field="color"><![CDATA[
+          <subquery property="color"><![CDATA[
           select name, asnumber as renamed from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
-          <subquery fieldPrefix="color_delimited_" delimiter="," type="delimited"><![CDATA[
+          <subquery propertyPrefix="color_delimited_" delimiter="," type="delimited"><![CDATA[
         select name, asnumber as renamed from SubqueryColors where parent_id=:id order by name
         ]]></subquery>
         </set-item>
@@ -92,7 +92,7 @@
           <query><![CDATA[
           select * from SubqueryContent
         ]]></query>
-          <subquery field="address" discriminator="discriminator"><![CDATA[
+          <subquery property="address" discriminator="discriminator"><![CDATA[
           select discriminator, street from SubqueryAddress where parent_id=:id order by id
         ]]></subquery>
         </set-item>

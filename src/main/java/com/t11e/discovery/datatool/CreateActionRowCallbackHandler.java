@@ -108,19 +108,19 @@ public class CreateActionRowCallbackHandler
           }
           if (!groupedbyDiscriminator.isEmpty())
           {
-            properties.put(subquery.getField(), groupedbyDiscriminator);
+            properties.put(subquery.getProperty(), groupedbyDiscriminator);
           }
         }
-        else if (StringUtils.isBlank(subquery.getField()))
+        else if (StringUtils.isBlank(subquery.getProperty()))
         {
-          final String fieldPrefix = StringUtils.isNotBlank(subquery.getFieldPrefix()) ? subquery.getFieldPrefix() : "";
+          final String propertyPrefix = StringUtils.isNotBlank(subquery.getPropertyPrefix()) ? subquery.getPropertyPrefix() : "";
           if (values.size() == 1)
 
           {
             final Map<String, Object> row = values.get(0);
             for (final Entry<String, Object> entry : row.entrySet())
             {
-              properties.put(fieldPrefix + entry.getKey(), entry.getValue());
+              properties.put(propertyPrefix + entry.getKey(), entry.getValue());
             }
           }
           else if (values.size() > 1)
@@ -139,14 +139,14 @@ public class CreateActionRowCallbackHandler
             }
             for (final Entry<String, List<Object>> flattenedValues : flattened.entrySet())
             {
-              properties.put(fieldPrefix + flattenedValues.getKey(),
+              properties.put(propertyPrefix + flattenedValues.getKey(),
                 SubQuery.Type.DELIMITED.equals(subquery.getType())
                   ? StringUtils.join(flattenedValues.getValue(), subquery.getDelimiter())
                   : flattenedValues.getValue());
             }
           }
         }
-        // use single field
+        // use single property
         else
         {
           final boolean multiColumn = values.size() > 0 && values.get(0).size() != 1;
@@ -184,11 +184,11 @@ public class CreateActionRowCallbackHandler
                 }
                 value = remapped;
               }
-              properties.put(subquery.getField(), value);
+              properties.put(subquery.getProperty(), value);
             }
             else
             {
-              properties.put(subquery.getField(), row.values().iterator().next());
+              properties.put(subquery.getProperty(), row.values().iterator().next());
             }
           }
           else if (values.size() > 1)
@@ -221,7 +221,7 @@ public class CreateActionRowCallbackHandler
               {
                 value = values;
               }
-              properties.put(subquery.getField(), value);
+              properties.put(subquery.getProperty(), value);
             }
             else
             {
@@ -230,7 +230,7 @@ public class CreateActionRowCallbackHandler
               {
                 flattened.add(row.values().iterator().next());
               }
-              properties.put(subquery.getField(),
+              properties.put(subquery.getProperty(),
                 SubQuery.Type.DELIMITED.equals(subquery.getType())
                   ? StringUtils.join(flattened, subquery.getDelimiter())
                   : flattened);
