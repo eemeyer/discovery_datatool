@@ -4,6 +4,10 @@
   xsi:schemaLocation=
     "http://transparensee.com/schema/datatool-config-4
      http://transparensee.com/schema/datatool-config-4.xsd">
+  <!--
+    Please see the Discovery Engine online documentation for complete details about configuring the Data Tool:
+    https://transparensee.com/docs/discovery/current/html/data_integration/datatool.html
+  -->
   <dataSources>
     <driver name="production-dataSource"
       jar="drivers/jtds-1.2.5.jar"
@@ -37,8 +41,8 @@
           <query><![CDATA[
             select * from items
           ]]></query>
-          <subquery property="color-default"><![CDATA[
-            select name from SubqueryColors where parent_id=:id order by name
+          <subquery><![CDATA[
+            select name as color from SubqueryColors where parent_id=:id order by name
           ]]></subquery>
           <subquery property="color-array" type="array"><![CDATA[
             select name from SubqueryColors where parent_id=:id order by name
@@ -48,6 +52,12 @@
           ]]></subquery>
           <subquery property="color-delimited" type="delimited" delimiter="|"><![CDATA[
             select name from SubqueryColors where parent_id=:id order by name
+          ]]></subquery>
+          <subquery property="address" discriminator="addr_type"><![CDATA[
+            select addr_type, street, city, state, zipcode from SubqueryAddress where parent_id=:id order by id
+          ]]></subquery>
+          <subquery propertyPrefix="product"><![CDATA[
+            select id, price, description from order_lines where order_id=:id order by id
           ]]></subquery>
         </set-item>
       </snapshot>
@@ -63,21 +73,8 @@
             select * from items
             where last_updated >= :start and last_updated < :end
           ]]></query>
-          <!--
-            Each set-item can contain zero or more subquery elements.
-            Each subquery must return only a single column.
-            If a subquery returns more than one column, a run-time exception is thrown, and the changeset will fail to be created.
-            The property attribute specifies the property name to use when creating the changeset set-item entry.
-            Properties returned in the main query can be replaced by subquery values by using an overlapping property name.
-            The default subquery type is "array" - which builds an array in the set-item structure for the multiple values.
-            The other type option value is "delimited" - which builds a single delimited string containing the multiple values.
-            An optional delimiter can specified. If none is specified, then the delimiter defaults to a comma.
-            All the columns returned by the main query are available to the subquery as named bound parameters
-            (:start, :end, and :kind are not available to the subquery).
-            The subquery examples below use the id returned from the main query as a bound parameter.
-           -->
-          <subquery property="color-default"><![CDATA[
-            select name from SubqueryColors where parent_id=:id order by name
+          <subquery><![CDATA[
+            select name as color from SubqueryColors where parent_id=:id order by name
           ]]></subquery>
           <subquery property="color-array" type="array"><![CDATA[
             select name from SubqueryColors where parent_id=:id order by name
