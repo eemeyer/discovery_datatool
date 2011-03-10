@@ -150,5 +150,4 @@ public abstract class EndToEndTestBase
       new HashSet<String>(nodesAsStrings(doc, "/changeset/remove-item/@id")));
     return doc;
   }
-
 }

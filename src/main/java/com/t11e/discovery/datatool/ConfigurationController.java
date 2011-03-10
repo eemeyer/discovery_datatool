@@ -25,4 +25,13 @@ public class ConfigurationController
     configurationManager.loadConfiguration(request.getInputStream(), true);
     response.setStatus(HttpServletResponse.SC_OK);
   }
+
+  @RequestMapping(value = "/ws/configuration/reload")
+  public void reloadConfiguration(
+    final HttpServletResponse response)
+  {
+    configurationManager.reloadConfiguration();
+    response.setStatus(HttpServletResponse.SC_OK);
+  }
+
 }

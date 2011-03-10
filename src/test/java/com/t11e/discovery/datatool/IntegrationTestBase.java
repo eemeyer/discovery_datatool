@@ -1,5 +1,9 @@
 package com.t11e.discovery.datatool;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -10,15 +14,20 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 public abstract class IntegrationTestBase
   extends EndToEndTestBase
 {
+  @Autowired
+  private ConfigurationController configurationController;
+
   @Override
   protected String[] getSetupScripts()
   {
@@ -179,5 +188,23 @@ public abstract class IntegrationTestBase
     }
     result[0] = ps.executeQuery();
     conn.close();
+  }
+
+  @Test
+  public void testConfigurationReloadFromFileSystem()
+    throws IOException
+  {
+    final File tempFile = File.createTempFile("datatool_test_config", ".xml");
+    {
+      final FileOutputStream fos = new FileOutputStream(tempFile);
+      final InputStream is = getConfigurationXml();
+      IOUtils.copy(is, fos);
+      IOUtils.closeQuietly(is);
+      IOUtils.closeQuietly(fos);
+    }
+    configurationManager.setConfigurationFile(tempFile.getAbsolutePath());
+    final MockHttpServletResponse response = new MockHttpServletResponse();
+    configurationController.reloadConfiguration(response);
+    Assert.assertEquals(200, response.getStatus());
   }
 }

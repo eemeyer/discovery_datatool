@@ -87,6 +87,18 @@ public class ConfigurationManager
     }
   }
 
+  public void reloadConfiguration()
+  {
+    try
+    {
+      loadConfiguration(new FileInputStream(configurationFile), false);
+    }
+    catch (FileNotFoundException e)
+    {
+      throw new RuntimeException(e);
+    }
+  }
+
   // TODO This is a hack so we don't need to dive into the Jetty/Spring
   // lifecycle stuff. It allows us to terminate the tool when running it from
   // a standalone jar if the config is missing or invalid.
