@@ -19,7 +19,7 @@ insert into vertical_deleted (id, lastUpdated) values
 create table vertical_data (
   id bigint not null,
   name varchar(255),
-  value clob);
+  value varchar(255));
 
 insert into vertical_data (id, name, value) values
   (1, 'color', 'red'),

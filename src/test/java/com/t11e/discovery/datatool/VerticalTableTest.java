@@ -45,7 +45,6 @@ public class VerticalTableTest
     Assert.assertEquals(
       Arrays.asList("orange", "yellow"),
       nodesAsStrings(doc,
-        "/changeset/set-item[@id='1']/properties/struct/entry[@name='color']/array/element/string/text()"));
-
+        "/changeset/set-item[@id='2']/properties/struct/entry[@name='color']/array/element/string/text()"));
   }
 }

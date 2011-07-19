@@ -17,7 +17,7 @@
             SELECT data.id, name, value
             FROM vertical_master_items master
             JOIN vertical_data data on data.id = master.id
-            ORDER BY data.id, name
+            ORDER BY data.id, name, value
         ]]></query>
           <merge-columns keyColumn="name" valueColumn="value"/>
         </set-item>
@@ -34,7 +34,7 @@
             FROM vertical_master_items master
             JOIN vertical_data data on data.id = master.id
             WHERE lastUpdated >= :start and lastUpdated < :end
-            ORDER BY data.id, name
+            ORDER BY data.id, name, value
         ]]></query>
           <merge-columns keyColumn="name" valueColumn="value"/>
         </set-item>
