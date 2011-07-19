@@ -45,5 +45,22 @@
         </remove-item>
       </delta>
     </sqlPublisher>
+
+    <sqlPublisher name="test-subquery" dataSource="dataSource">
+      <bulk>
+        <set-item idColumn="id">
+          <query><![CDATA[
+            SELECT data.id, name, value
+            FROM vertical_master_items master
+            JOIN vertical_data data on data.id = master.id
+            ORDER BY data.id, name, value
+        ]]></query>
+          <merge-columns keyColumn="name" valueColumn="value"/>
+          <subquery property="address" discriminator="discriminator"><![CDATA[
+          select discriminator, street from vertical_subquery_address where parent_id=:id order by id
+        ]]></subquery>
+        </set-item>
+      </bulk>
+    </sqlPublisher>
   </publishers>
 </config>
