@@ -1,9 +1,9 @@
 <config
-  xmlns="http://transparensee.com/schema/datatool-config-4"
+  xmlns="http://transparensee.com/schema/datatool-config-5"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation=
-    "http://transparensee.com/schema/datatool-config-4
-     http://transparensee.com/schema/datatool-config-4.xsd">
+    "http://transparensee.com/schema/datatool-config-5
+     http://transparensee.com/schema/datatool-config-5.xsd">
   <!--
     Please see the Discovery Engine online documentation for complete details about configuring the Data Tool:
     https://transparensee.com/docs/discovery/current/html/data_integration/datatool.html
@@ -37,51 +37,21 @@
     <sqlPublisher name="production"
       dataSource="production-dataSource" profile="production-profile">
       <snapshot>
-        <vertical-set-item idColumn="id" nameColumn="name" valueColumn="value" continguousIds="true">
+        <set-item idColumn="id">
           <query><![CDATA[
             SELECT mid.id, name, value
             FROM my_items
             JOIN my_items_data mid on (id)
             ORDER BY mid.id, name
           ]]></query>
-        </vertical-set-item>
-      </snapshot>
-      <delta>
-        <vertical-set-item idColumn="id" nameColumn="name" valueColumn="value" continguousIds="true">
-          <query><![CDATA[
-            SELECT mid.id, name, value
-            FROM my_items
-            JOIN my_items_data mid on (id)
-            ORDER BY mid.id, name
-            WHERE timestamp >= :start and timestamp < :end
-          ]]></query>
-        </vertical-set-item>
-        <remove-item idColumn="id">
-          <query><![CDATA[
-            select id from deleted_items
-            where last_updated >= :start and last_updated < :end
-          ]]></query>
-        </remove-item>
-      </delta>
-    </sqlPublisher>
-
-    <sqlPublisher name="production"
-      dataSource="production-dataSource" profile="production-profile">
-      <snapshot>
-        <vertical-set-item idColumn="id" nameColumn="name" valueColumn="value">
-          <query><![CDATA[
-            SELECT mid.id, name, value
-            FROM my_items
-            JOIN my_items_data mid on (id)
-            ORDER BY mid.id, name
-          ]]></query>
+          <merge-columns keyColumn="name" valueColumn="value"/>
           <subquery><![CDATA[
             select name as color from SubqueryColors where parent_id=:id order by name
           ]]></subquery>
-        </vertical-set-item>
+        </set-item>
       </snapshot>
       <delta>
-        <vertical-set-item idColumn="id" nameColumn="name" valueColumn="value">
+        <set-item idColumn="id">
           <query><![CDATA[
             SELECT mid.id, name, value
             FROM my_items
@@ -89,10 +59,11 @@
             ORDER BY mid.id, name
             WHERE timestamp >= :start and timestamp < :end
           ]]></query>
+          <merge-columns keyColumn="name" valueColumn="value"/>
           <subquery><![CDATA[
             select name as color from SubqueryColors where parent_id=:id order by name
           ]]></subquery>
-        </vertical-set-item>
+        </set-item>
         <remove-item idColumn="id">
           <query><![CDATA[
             select id from deleted_items
@@ -101,35 +72,5 @@
         </remove-item>
       </delta>
     </sqlPublisher>
-
-    <sqlPublisher name="production"
-      dataSource="production-dataSource" profile="production-profile">
-      <snapshot>
-        <vertical-add-to-item idColumn="id" nameColumn="name" valueColumn="value">
-          <query><![CDATA[
-            SELECT mid.id, name, value
-            FROM my_items
-            JOIN my_items_data mid on (id)
-          ]]></query>
-        </vertical-add-to-item>
-      </snapshot>
-      <delta>
-        <vertical-add-to-item idColumn="id" nameColumn="name" valueColumn="value">
-          <query><![CDATA[
-            SELECT mid.id, name, value
-            FROM my_items
-            JOIN my_items_data mid on (id)
-            WHERE timestamp >= :start and timestamp < :end
-          ]]></query>
-        </vertical-add-to-item>
-        <remove-item idColumn="id">
-          <query><![CDATA[
-            select id from deleted_items
-            where last_updated >= :start and last_updated < :end
-          ]]></query>
-        </remove-item>
-      </delta>
-    </sqlPublisher>
-
   </publishers>
 </config>
