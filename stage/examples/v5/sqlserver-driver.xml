@@ -9,13 +9,13 @@
     https://transparensee.com/docs/discovery/current/html/data_integration/datatool.html
   -->
   <dataSources>
-    <dataSource name="production-dataSource"
-      jar="drivers/mysql-connector-java-5.1.10-bin.jar"
-      class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
-      <url>jdbc:mysql://localhost/test</url>
-      <user>test</user>
+    <driver name="production-dataSource"
+      jar="drivers/jtds-1.2.5.jar"
+      class="net.sourceforge.jtds.jdbc.Driver">
+      <url>jdbc:jtds:sqlserver://localhost/test</url>
+      <username>test</username>
       <password>test</password>
-    </dataSource>
+    </driver>
   </dataSources>
 
   <profiles>
