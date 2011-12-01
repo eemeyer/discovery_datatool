@@ -73,7 +73,7 @@
 
     <sqlPublisher name="mixed" dataSource="dataSource">
       <snapshot>
-        <set-item idColumn="id" scopedJsonColumns="json" unscopedJsonColumns="json2">
+        <set-item idColumn="id" scopedJsonColumns="json, foo,bar baz" unscopedJsonColumns="json2">
           <query><![CDATA[
             SELECT id as "id", name as "name", json, json as json2
             FROM Content

@@ -3,6 +3,7 @@ package com.t11e.discovery.datatool;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -110,24 +111,24 @@ public class SqlAction
     return idColumn;
   }
 
-  public Set<String> getScopedJsonColumns()
+  public Set<String> getScopedJsonColumnsSet()
   {
     return scopedJsonColumns;
   }
 
-  public void setScopedJsonColumns(final Set<String> scopedJsonColumns)
+  public void setScopedJsonColumns(final String scopedJsonColumns)
   {
-    this.scopedJsonColumns = scopedJsonColumns;
+    this.scopedJsonColumns = new LinkedHashSet<String>(Arrays.asList(StringUtils.split(scopedJsonColumns, ", ")));
   }
 
-  public Set<String> getUnscopedJsonColumns()
+  public Set<String> getUnscopedJsonColumnsSet()
   {
     return unscopedJsonColumns;
   }
 
-  public void setUnscopedJsonColumns(final Set<String> unscopedJsonColumns)
+  public void setUnscopedJsonColumns(final String unscopedJsonColumns)
   {
-    this.unscopedJsonColumns = unscopedJsonColumns;
+    this.unscopedJsonColumns = new LinkedHashSet<String>(Arrays.asList(StringUtils.split(unscopedJsonColumns, ", ")));
   }
 
   public PropertyCase getPropertyCase()
