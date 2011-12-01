@@ -3,31 +3,39 @@ package com.t11e.discovery.datatool;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.t11e.discovery.datatool.column.BooleanColumnProcessor;
+import com.t11e.discovery.datatool.column.ColumnPropertiesProcessor;
 import com.t11e.discovery.datatool.column.DateColumnProcessor;
-import com.t11e.discovery.datatool.column.IColumnProcessor;
+import com.t11e.discovery.datatool.column.IColumnPropertiesProcessor;
 import com.t11e.discovery.datatool.column.JsonColumnProcessor;
 import com.t11e.discovery.datatool.column.LowerCaseStringColumnProcessor;
 import com.t11e.discovery.datatool.column.StringColumnProcessor;
 import com.t11e.discovery.datatool.column.TimeColumnProcessor;
 import com.t11e.discovery.datatool.column.TimestampColumnProcessor;
+import com.t11e.discovery.datatool.column.UnscopedJsonPropertiesProcessor;
 import com.t11e.discovery.datatool.column.UpperCaseStringColumnProcessor;
 
 public class ResultSetConvertor
 {
   private final PropertyCase propertyCase;
-  private final Set<String> jsonColumns;
+  private final Set<String> scopedJsonColumns;
+  private final Set<String> unscopedJsonColumns;
   private final Set<String> changeValueCaseColumns;
-  private IColumnProcessor[] columnProcessors;
+  private IColumnPropertiesProcessor[][] columnProcessors;
   private String[] columnNames;
 
-  public ResultSetConvertor(final PropertyCase propertyCase, final Set<String> jsonColumns,
+  public ResultSetConvertor(final PropertyCase propertyCase, final Set<String> scopedJsonColumns,
+    final Set<String> unscopedJsonColumns,
     final Set<String> potentialChangeValueCaseColumns)
   {
     this.propertyCase = propertyCase;
@@ -43,7 +51,8 @@ public class ResultSetConvertor
     {
       changeValueCaseColumns = Collections.emptySet();
     }
-    this.jsonColumns = jsonColumns != null ? jsonColumns : Collections.<String> emptySet();
+    this.scopedJsonColumns = scopedJsonColumns != null ? scopedJsonColumns : Collections.<String> emptySet();
+    this.unscopedJsonColumns = unscopedJsonColumns != null ? unscopedJsonColumns : Collections.<String> emptySet();
   }
 
   public Map<String, Object> getRowAsMap(final ResultSet rs)
@@ -55,14 +64,13 @@ public class ResultSetConvertor
     for (int idx = 0; idx < columnProcessors.length; ++idx)
     {
       final int column = idx + 1;
-      final IColumnProcessor columnProcessor = columnProcessors[idx];
-      if (columnProcessor != null)
+      final IColumnPropertiesProcessor[] processors = columnProcessors[idx];
+      if (processors != null)
       {
         final String name = columnNames[idx];
-        final Object value = columnProcessor.processColumn(rs, column);
-        if (value != null)
+        for (final IColumnPropertiesProcessor processor : processors)
         {
-          properties.put(name, value);
+          processor.processColumn(properties, rs, column, name);
         }
       }
     }
@@ -75,7 +83,7 @@ public class ResultSetConvertor
     if (columnProcessors == null)
     {
       final ResultSetMetaData metaData = rs.getMetaData();
-      final IColumnProcessor[] processors = new IColumnProcessor[metaData.getColumnCount()];
+      final IColumnPropertiesProcessor[][] processors = new IColumnPropertiesProcessor[metaData.getColumnCount()][];
       final String[] names = new String[processors.length];
       for (int idx = 0; idx < processors.length; idx++)
       {
@@ -89,18 +97,18 @@ public class ResultSetConvertor
     }
   }
 
-  private IColumnProcessor getColumnProcessor(
+  private IColumnPropertiesProcessor[] getColumnProcessor(
     final ResultSetMetaData md,
     final int column,
     final String columnLabel)
     throws SQLException
   {
-    IColumnProcessor output;
+    IColumnPropertiesProcessor[] output;
     switch (md.getColumnType(column))
     {
       case java.sql.Types.BIT:
       case java.sql.Types.BOOLEAN:
-        output = BooleanColumnProcessor.INSTANCE;
+        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(BooleanColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.TINYINT:
       case java.sql.Types.SMALLINT:
@@ -111,46 +119,60 @@ public class ResultSetConvertor
       case java.sql.Types.DOUBLE:
       case java.sql.Types.NUMERIC:
       case java.sql.Types.DECIMAL:
-        output = StringColumnProcessor.INSTANCE;
+        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.CHAR:
       case java.sql.Types.VARCHAR:
       case java.sql.Types.LONGVARCHAR:
       case java.sql.Types.CLOB:
       {
-        if (columnLabel != null && jsonColumns.contains(columnLabel))
+        final String columnLabelLower = StringUtils.lowerCase(columnLabel);
+        if (columnLabel != null &&
+          (scopedJsonColumns.contains(columnLabelLower)
+          || unscopedJsonColumns.contains(columnLabelLower)))
         {
-          output = JsonColumnProcessor.INSTANCE;
+          final List<IColumnPropertiesProcessor> jsonProcessors = new ArrayList<IColumnPropertiesProcessor>(2);
+          if (scopedJsonColumns.contains(columnLabelLower))
+          {
+            jsonProcessors.add(new ColumnPropertiesProcessor(JsonColumnProcessor.INSTANCE));
+          }
+          if (unscopedJsonColumns.contains(columnLabelLower))
+          {
+            jsonProcessors.add(new UnscopedJsonPropertiesProcessor(JsonColumnProcessor.INSTANCE, propertyCase));
+          }
+          output = jsonProcessors.toArray(new IColumnPropertiesProcessor[jsonProcessors.size()]);
         }
         else if (columnLabel != null && changeValueCaseColumns.contains(columnLabel))
         {
           switch (propertyCase)
           {
             case LOWER:
-              output = LowerCaseStringColumnProcessor.INSTANCE;
+              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+                LowerCaseStringColumnProcessor.INSTANCE)};
               break;
             case UPPER:
-              output = UpperCaseStringColumnProcessor.INSTANCE;
+              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+                UpperCaseStringColumnProcessor.INSTANCE)};
               break;
             default:
-              output = StringColumnProcessor.INSTANCE;
+              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
               break;
           }
         }
         else
         {
-          output = StringColumnProcessor.INSTANCE;
+          output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
         }
         break;
       }
       case java.sql.Types.DATE:
-        output = DateColumnProcessor.INSTANCE;
+        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(DateColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.TIME:
-        output = TimeColumnProcessor.INSTANCE;
+        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(TimeColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.TIMESTAMP:
-        output = TimestampColumnProcessor.INSTANCE;
+        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(TimestampColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.BINARY:
       case java.sql.Types.VARBINARY:

@@ -26,7 +26,8 @@ public class SqlAction
   private String idColumn;
   private String providerColumn;
   private String kindColumn;
-  private Set<String> jsonColumnNames = Collections.emptySet();
+  private Set<String> scopedJsonColumns = Collections.emptySet();
+  private Set<String> unscopedJsonColumns = Collections.emptySet();
   private PropertyCase propertyCase;
 
   @Override
@@ -41,14 +42,16 @@ public class SqlAction
         it.set(new MergeColumns(propertyCase.convert(merge.getKeyColumn()), propertyCase.convert(merge.getValueColumn())));
       }
     }
-    CollectionUtils.transform(jsonColumnNames, new Transformer()
+    final Transformer transformer = new Transformer()
     {
       @Override
       public String transform(final Object in)
       {
-        return propertyCase.convert((String) in);
+        return StringUtils.lowerCase((String) in);
       }
-    });
+    };
+    CollectionUtils.transform(scopedJsonColumns, transformer);
+    CollectionUtils.transform(unscopedJsonColumns, transformer);
   }
 
   public Set<String> getFilter()
@@ -107,20 +110,24 @@ public class SqlAction
     return idColumn;
   }
 
-  public Set<String> getJsonColumnNames()
+  public Set<String> getScopedJsonColumns()
   {
-    return jsonColumnNames;
+    return scopedJsonColumns;
   }
 
-  public void setJsonColumnNames(final String jsonColumnNames)
+  public void setScopedJsonColumns(final Set<String> scopedJsonColumns)
   {
-    this.jsonColumnNames = new HashSet<String>(
-        Arrays.asList(StringUtils.split(jsonColumnNames, ", ")));
+    this.scopedJsonColumns = scopedJsonColumns;
   }
 
-  public void setJsonColumnNames(final Set<String> jsonColumnNames)
+  public Set<String> getUnscopedJsonColumns()
   {
-    this.jsonColumnNames = jsonColumnNames;
+    return unscopedJsonColumns;
+  }
+
+  public void setUnscopedJsonColumns(final Set<String> unscopedJsonColumns)
+  {
+    this.unscopedJsonColumns = unscopedJsonColumns;
   }
 
   public PropertyCase getPropertyCase()
