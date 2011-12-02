@@ -14,38 +14,39 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import com.t11e.discovery.datatool.column.BooleanColumnProcessor;
-import com.t11e.discovery.datatool.column.ColumnPropertiesProcessor;
 import com.t11e.discovery.datatool.column.DateColumnProcessor;
-import com.t11e.discovery.datatool.column.IColumnPropertiesProcessor;
+import com.t11e.discovery.datatool.column.IItemPropertiesFromColumnProcessor;
+import com.t11e.discovery.datatool.column.ItemPropertiesFromColumnProcessor;
+import com.t11e.discovery.datatool.column.ItemPropertiesFromUnscopedJsonColumnProcessor;
 import com.t11e.discovery.datatool.column.JsonColumnProcessor;
 import com.t11e.discovery.datatool.column.LowerCaseStringColumnProcessor;
 import com.t11e.discovery.datatool.column.StringColumnProcessor;
 import com.t11e.discovery.datatool.column.TimeColumnProcessor;
 import com.t11e.discovery.datatool.column.TimestampColumnProcessor;
-import com.t11e.discovery.datatool.column.UnscopedJsonPropertiesProcessor;
 import com.t11e.discovery.datatool.column.UpperCaseStringColumnProcessor;
 
 public class ResultSetConvertor
 {
-  private static final ColumnPropertiesProcessor JSON = new ColumnPropertiesProcessor(JsonColumnProcessor.INSTANCE);
-  private static final ColumnPropertiesProcessor[] LOWER_STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    LowerCaseStringColumnProcessor.INSTANCE)};
-  private static final ColumnPropertiesProcessor[] UPPER_STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    UpperCaseStringColumnProcessor.INSTANCE)};
-  private static final ColumnPropertiesProcessor[] STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    StringColumnProcessor.INSTANCE)};
-  private static final ColumnPropertiesProcessor[] DATE = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    DateColumnProcessor.INSTANCE)};
-  private static final ColumnPropertiesProcessor[] TIME = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    TimeColumnProcessor.INSTANCE)};
-  private static final ColumnPropertiesProcessor[] TIMESTAMP = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-    TimestampColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor JSON = new ItemPropertiesFromColumnProcessor(
+    JsonColumnProcessor.INSTANCE);
+  private static final IItemPropertiesFromColumnProcessor[] LOWER_STRING = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(LowerCaseStringColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor[] UPPER_STRING = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(UpperCaseStringColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor[] STRING = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(StringColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor[] DATE = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(DateColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor[] TIME = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(TimeColumnProcessor.INSTANCE)};
+  private static final IItemPropertiesFromColumnProcessor[] TIMESTAMP = new IItemPropertiesFromColumnProcessor[]{
+      new ItemPropertiesFromColumnProcessor(TimestampColumnProcessor.INSTANCE)};
 
   private final PropertyCase propertyCase;
   private final Set<String> scopedJsonColumns;
   private final Set<String> unscopedJsonColumns;
   private final Set<String> changeValueCaseColumns;
-  private IColumnPropertiesProcessor[][] columnProcessors;
+  private IItemPropertiesFromColumnProcessor[][] columnProcessors;
   private String[] columnNames;
 
   public ResultSetConvertor(final PropertyCase propertyCase, final Set<String> scopedJsonColumns,
@@ -78,11 +79,11 @@ public class ResultSetConvertor
     for (int idx = 0; idx < columnProcessors.length; ++idx)
     {
       final int column = idx + 1;
-      final IColumnPropertiesProcessor[] processors = columnProcessors[idx];
+      final IItemPropertiesFromColumnProcessor[] processors = columnProcessors[idx];
       if (processors != null)
       {
         final String name = columnNames[idx];
-        for (final IColumnPropertiesProcessor processor : processors)
+        for (final IItemPropertiesFromColumnProcessor processor : processors)
         {
           processor.processColumn(properties, rs, column, name);
         }
@@ -97,7 +98,7 @@ public class ResultSetConvertor
     if (columnProcessors == null)
     {
       final ResultSetMetaData metaData = rs.getMetaData();
-      final IColumnPropertiesProcessor[][] processors = new IColumnPropertiesProcessor[metaData.getColumnCount()][];
+      final IItemPropertiesFromColumnProcessor[][] processors = new IItemPropertiesFromColumnProcessor[metaData.getColumnCount()][];
       final String[] names = new String[processors.length];
       for (int idx = 0; idx < processors.length; idx++)
       {
@@ -111,18 +112,18 @@ public class ResultSetConvertor
     }
   }
 
-  private IColumnPropertiesProcessor[] getColumnProcessor(
+  private IItemPropertiesFromColumnProcessor[] getColumnProcessor(
     final ResultSetMetaData md,
     final int column,
     final String columnLabel)
     throws SQLException
   {
-    IColumnPropertiesProcessor[] output;
+    IItemPropertiesFromColumnProcessor[] output;
     switch (md.getColumnType(column))
     {
       case java.sql.Types.BIT:
       case java.sql.Types.BOOLEAN:
-        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(BooleanColumnProcessor.INSTANCE)};
+        output = new ItemPropertiesFromColumnProcessor[]{new ItemPropertiesFromColumnProcessor(BooleanColumnProcessor.INSTANCE)};
         break;
       case java.sql.Types.TINYINT:
       case java.sql.Types.SMALLINT:
@@ -145,16 +146,16 @@ public class ResultSetConvertor
           (scopedJsonColumns.contains(columnLabelLower)
           || unscopedJsonColumns.contains(columnLabelLower)))
         {
-          final List<IColumnPropertiesProcessor> jsonProcessors = new ArrayList<IColumnPropertiesProcessor>(2);
+          final List<IItemPropertiesFromColumnProcessor> jsonProcessors = new ArrayList<IItemPropertiesFromColumnProcessor>(2);
           if (scopedJsonColumns.contains(columnLabelLower))
           {
             jsonProcessors.add(JSON);
           }
           if (unscopedJsonColumns.contains(columnLabelLower))
           {
-            jsonProcessors.add(new UnscopedJsonPropertiesProcessor(JsonColumnProcessor.INSTANCE, propertyCase));
+            jsonProcessors.add(new ItemPropertiesFromUnscopedJsonColumnProcessor(JsonColumnProcessor.INSTANCE, propertyCase));
           }
-          output = jsonProcessors.toArray(new IColumnPropertiesProcessor[jsonProcessors.size()]);
+          output = jsonProcessors.toArray(new IItemPropertiesFromColumnProcessor[jsonProcessors.size()]);
         }
         else if (columnLabel != null && changeValueCaseColumns.contains(columnLabel))
         {

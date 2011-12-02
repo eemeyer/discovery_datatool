@@ -9,13 +9,17 @@ import org.apache.commons.lang.StringUtils;
 
 import com.t11e.discovery.datatool.PropertyCase;
 
-public class UnscopedJsonPropertiesProcessor
-  implements IColumnPropertiesProcessor
+/**
+ * If json column contains a map, then merges that map with the target item properties for that row, converting key case based on
+ * configured PropertyCase. If json column is not a map, then value is stored in a single key (propertyName) in the item map.
+ */
+public class ItemPropertiesFromUnscopedJsonColumnProcessor
+  implements IItemPropertiesFromColumnProcessor
 {
   private final JsonColumnProcessor delegate;
   private final PropertyCase propertyCase;
 
-  public UnscopedJsonPropertiesProcessor(final JsonColumnProcessor delegate, final PropertyCase propertyCase)
+  public ItemPropertiesFromUnscopedJsonColumnProcessor(final JsonColumnProcessor delegate, final PropertyCase propertyCase)
   {
     this.delegate = delegate;
     this.propertyCase = propertyCase;
@@ -23,7 +27,7 @@ public class UnscopedJsonPropertiesProcessor
 
   @Override
   public void processColumn(final Map<String, Object> target, final ResultSet rs, final int column,
-    final String propname)
+    final String propertyName)
     throws SQLException
   {
     final Object value = delegate.processColumn(rs, column);
@@ -48,7 +52,7 @@ public class UnscopedJsonPropertiesProcessor
       }
       else
       {
-        target.put(propname, value);
+        target.put(propertyName, value);
       }
     }
   }
