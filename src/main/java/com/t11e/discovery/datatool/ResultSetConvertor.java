@@ -27,6 +27,20 @@ import com.t11e.discovery.datatool.column.UpperCaseStringColumnProcessor;
 
 public class ResultSetConvertor
 {
+  private static final ColumnPropertiesProcessor JSON = new ColumnPropertiesProcessor(JsonColumnProcessor.INSTANCE);
+  private static final ColumnPropertiesProcessor[] LOWER_STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    LowerCaseStringColumnProcessor.INSTANCE)};
+  private static final ColumnPropertiesProcessor[] UPPER_STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    UpperCaseStringColumnProcessor.INSTANCE)};
+  private static final ColumnPropertiesProcessor[] STRING = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    StringColumnProcessor.INSTANCE)};
+  private static final ColumnPropertiesProcessor[] DATE = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    DateColumnProcessor.INSTANCE)};
+  private static final ColumnPropertiesProcessor[] TIME = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    TimeColumnProcessor.INSTANCE)};
+  private static final ColumnPropertiesProcessor[] TIMESTAMP = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
+    TimestampColumnProcessor.INSTANCE)};
+
   private final PropertyCase propertyCase;
   private final Set<String> scopedJsonColumns;
   private final Set<String> unscopedJsonColumns;
@@ -119,7 +133,7 @@ public class ResultSetConvertor
       case java.sql.Types.DOUBLE:
       case java.sql.Types.NUMERIC:
       case java.sql.Types.DECIMAL:
-        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
+        output = STRING;
         break;
       case java.sql.Types.CHAR:
       case java.sql.Types.VARCHAR:
@@ -134,7 +148,7 @@ public class ResultSetConvertor
           final List<IColumnPropertiesProcessor> jsonProcessors = new ArrayList<IColumnPropertiesProcessor>(2);
           if (scopedJsonColumns.contains(columnLabelLower))
           {
-            jsonProcessors.add(new ColumnPropertiesProcessor(JsonColumnProcessor.INSTANCE));
+            jsonProcessors.add(JSON);
           }
           if (unscopedJsonColumns.contains(columnLabelLower))
           {
@@ -147,32 +161,30 @@ public class ResultSetConvertor
           switch (propertyCase)
           {
             case LOWER:
-              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-                LowerCaseStringColumnProcessor.INSTANCE)};
+              output = LOWER_STRING;
               break;
             case UPPER:
-              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(
-                UpperCaseStringColumnProcessor.INSTANCE)};
+              output = UPPER_STRING;
               break;
             default:
-              output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
+              output = STRING;
               break;
           }
         }
         else
         {
-          output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(StringColumnProcessor.INSTANCE)};
+          output = STRING;
         }
         break;
       }
       case java.sql.Types.DATE:
-        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(DateColumnProcessor.INSTANCE)};
+        output = DATE;
         break;
       case java.sql.Types.TIME:
-        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(TimeColumnProcessor.INSTANCE)};
+        output = TIME;
         break;
       case java.sql.Types.TIMESTAMP:
-        output = new ColumnPropertiesProcessor[]{new ColumnPropertiesProcessor(TimestampColumnProcessor.INSTANCE)};
+        output = TIMESTAMP;
         break;
       case java.sql.Types.BINARY:
       case java.sql.Types.VARBINARY:
