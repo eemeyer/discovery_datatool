@@ -21,7 +21,7 @@ Then run the tool by executing the run.sh script.
 
 Release Notes
 -------------
-1.8 - 2011-XX-XX
+1.8 - 2011-12-08
 
   * Adds configuration attribute for item property-case (preserve, lower, upper
     and legacy). Starting with new schema version 7, the default is preserve. Older
@@ -36,6 +36,16 @@ Release Notes
 
   * Fixes "If a subquery is empty, it should be ignored (and reported) and not
     throw an error."
+
+  * Adds support for unscopedJsonColumns to be able to merge in JSON column
+    data to the top level properties. Deprecates property "jsonColumnNames" in
+    favor of more explicit "scopedJsonColumns" for the same behavior. Adds new
+    property "unscopedJsonColumns" for columns that should be merged into the
+    top-level item properties.
+
+  * Makes subqueries use NullDefaultCaseInsensitiveParameterSource. If subquery
+    uses a bound parameter that is not present in the main item properties, then
+    null is used for the parameter value.
 
 1.7 - 2011-11-04
   * Adds support for add-to-item for deltas and snapshots (the Discovery Engine
