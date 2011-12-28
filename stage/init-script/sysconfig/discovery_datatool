@@ -1,0 +1,58 @@
+# You may customize the startup of the discovery
+# data tool by specifying variables in this
+# file, RELEASE_DIR is required
+#
+# DATATOOL_USER
+#   Which user account to use when running the data tool
+#
+# DATATOOL_DIR
+#   The directory used for the configuration
+#   files for startup of the data tool. The default is
+#   /opt/discovery/engines/feed
+#
+# RELEASE_DIR
+#   Determines which version of the data tool is started
+#
+# JVM_MEMORY
+#   Heap to allocate in megabytes.
+#
+# DATATOOL_HTTP_PORT
+#   HTTP port for data tool web server. Required for http.
+#
+# DATATOOL_BIND_ADDRESS
+#   Interface to bind to.
+#
+# DATATOOL_HTTPS_PORT
+#   HTTPS port for data tool web server. Require for https.
+#
+# DATATOOL_KEYSTORE_FILE
+#   Required for https.
+#
+# DATATOOL_KEYSTORE_PASS
+#   Required for https.
+#
+# DATATOOL_KEY_PASS
+#   Required for https.
+#
+# DATATOOL_TRUSTSTORE_FILE
+#   Required for https.
+#
+# DATATOOL_TRUSTSTORE_PASS
+#   Required for https.
+#
+# DATATOOL_LOGGING_PROPERTIES
+#   Optional java.util.logging configuration file.
+
+DATATOOL_HTTP_PORT=8089
+DATATOOL_BIND_ADDRESS=
+DATATOOL_HTTPS_PORT=
+DATATOOL_KEYSTORE_FILE=
+DATATOOL_KEYSTORE_PASS=
+DATATOOL_KEY_PASS=
+DATATOOL_TRUSTSTORE_FILE=
+DATATOOL_TRUSTSTORE_PASS=
+DATATOOL_LOGGING_PROPERTIES=
+JVM_MEMORY=
+RELEASE_DIR=
+DATATOOL_USER=
+DATATOOL_DIR=
