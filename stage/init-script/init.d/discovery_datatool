@@ -34,34 +34,16 @@ if [ ! -d "$DATATOOL_DIR" ]; then
   echo >&2 "DATATOOL_DIR is missing: $DATATOOL_DIR"
   exit 1
 fi
-if [ ! -f "$DATATOOL_DIR/discovery_datatool.xml" ]; then
-  echo >&2 "Discovery properties file is missing: $DATATOOL_DIR/discovery_datatool.xml"
+if [ ! -f "$DATATOOL_DIR/datatool.properties" ]; then
+  echo >&2 "Discovery data tool properties file is missing: $DATATOOL_DIR/datatool.properties"
   exit 1
 fi
 
 cd "$DATATOOL_DIR"
 if [ "$USER" != "$DATATOOL_USER" ]; then
   su -l "$DATATOOL_USER" \
-    -c "env DATATOOL_DIR=\"$DATATOOL_DIR\" RELEASE_DIR=\"$RELEASE_DIR\" \
-      JVM_MEMORY=\"$JVM_MEMORY\" \
-      DATATOOL_BIND_ADDRESS=\"$DATATOOL_BIND_ADDRESS\" \
-      DATATOOL_HTTP_PORT=\"$DATATOOL_HTTP_PORT\"\
-      DATATOOL_HTTPS_PORT=\"$DATATOOL_HTTPS_PORT\"\
-      DATATOOL_KEYSTORE_FILE=\"$DATATOOL_KEYSTORE_FILE\"\
-      DATATOOL_KEYSTORE_PASS=\"$DATATOOL_KEYSTORE_PASS\"\
-      DATATOOL_KEY_PASS=\"$DATATOOL_KEY_PASS\"\
-      DATATOOL_TRUSTSTORE_FILE=\"$DATATOOL_TRUSTSTORE_FILE\"\
-      DATATOOL_TRUSTSTORE_PASS=\"$DATATOOL_TRUSTSTORE_PASS\"\
-      DATATOOL_LOGGING_PROPERTIES=\"$DATATOOL_LOGGING_PROPERTIES\"\
-      \"$RELEASE_DIR\"/bin/discovery_datatool $*"
+    -c "env DATATOOL_DIR=\"$DATATOOL_DIR\" RELEASE_DIR=\"$RELEASE_DIR\" \"$RELEASE_DIR\"/bin/discovery_datatool $*"
 else
-  export DATATOOL_DIR RELEASE_DIR JVM_MEMORY \
-    DATATOOL_BIND_ADDRESS DATATOOL_HTTP_PORT DATATOOL_HTTPS_PORT \
-    DATATOOL_KEYSTORE_FILE \
-    DATATOOL_KEYSTORE_PASS \
-    DATATOOL_KEY_PASS \
-    DATATOOL_TRUSTSTORE_FILE \
-    DATATOOL_TRUSTSTORE_PASS \
-    DATATOOL_LOGGING_PROPERTIES \
+  export DATATOOL_DIR RELEASE_DIR
   "$RELEASE_DIR/bin/discovery_datatool" $*
 fi

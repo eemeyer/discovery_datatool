@@ -32,10 +32,10 @@ fi
 if [ -z "$DATATOOL_DIR" ]; then
   # Try and automatically determine DATATOOL_DIR
   RUN_DIR="$(dirname $0)"
-  if [ -f "$RUN_DIR"/discovery_datatool.xml ]; then
+  if [ -f "$RUN_DIR"/datatool.properties ]; then
     DATATOOL_DIR="$RUN_DIR"
   elif [ "$(basename "$RUN_DIR")" = "bin" -a \
-         -f "$RUN_DIR"/../discovery_datatool.xml ]; then
+         -f "$RUN_DIR"/../datatool.properties ]; then
     DATATOOL_DIR="$RUN_DIR"/..
   else
     cat >&2 <<EOF
@@ -50,7 +50,7 @@ EOF
   DATATOOL_DIR="$(cd "$DATATOOL_DIR" && pwd)"
 
   CURRENT_DIR="$(pwd)"
-  if [ -f "$CURRENT_DIR"/discovery_datatool.xml -a \
+  if [ -f "$CURRENT_DIR"/datatool.properties -a \
        "$CURRENT_DIR" != "$DATATOOL_DIR" ]; then
     cat >&2 <<EOF
 Ambiguous choice for data tool working directory:
@@ -105,16 +105,6 @@ d_start() {
     exit 1
   fi
   cd "$DATATOOL_DIR"
-  env JVM_MEMORY="$JVM_MEMORY" \
-      DATATOOL_BIND_ADDRESS="$DATATOOL_BIND_ADDRESS" \
-      DATATOOL_HTTP_PORT="$DATATOOL_HTTP_PORT"\
-      DATATOOL_HTTPS_PORT="$DATATOOL_HTTPS_PORT"\
-      DATATOOL_KEYSTORE_FILE="$DATATOOL_KEYSTORE_FILE"\
-      DATATOOL_KEYSTORE_PASS="$DATATOOL_KEYSTORE_PASS"\
-      DATATOOL_KEY_PASS="$DATATOOL_KEY_PASS"\
-      DATATOOL_TRUSTSTORE_FILE="$DATATOOL_TRUSTSTORE_FILE"\
-      DATATOOL_TRUSTSTORE_PASS="$DATATOOL_TRUSTSTORE_PASS"\
-      DATATOOL_LOGGING_PROPERTIES="$DATATOOL_LOGGING_PROPERTIES"\
   nohup "$DAEMON" >& /dev/null &
 }
 
