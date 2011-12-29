@@ -160,13 +160,6 @@ if [ -n "$datatool_truststore_pass" ]; then
   DATATOOL_ARGS="$DATATOOL_ARGS --truststore-pass $datatool_truststore_pass"
 fi
 
-if [ -z "$DATATOOL_LOGGING_PROPERTIES" ]; then
- DATATOOL_LOGGING_PROPERTIES="$DATATOOL_DIR/logging.properties"
-fi
-if [ -f "$DATATOOL_LOGGING_PROPERTIES" ]; then
-  JAVA_OPTIONS="$JAVA_OPTIONS -Djava.util.logging.config.file=$DATATOOL_LOGGING_PROPERTIES"
-fi
-
 
 mkdir -p log
 
