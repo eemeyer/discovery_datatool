@@ -14,5 +14,5 @@
 #   Determines which version of the data tool is started
 
 RELEASE_DIR=
-DATATOOL_USER=
-DATATOOL_DIR=
+# DATATOOL_USER=
+# DATATOOL_DIR=
