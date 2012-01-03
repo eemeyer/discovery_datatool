@@ -5,7 +5,7 @@
 # A startup script for the Discovery Data Tool.
 #
 # This script is designed to work when called directly from the
-# discovery_datatoo init script and when symlinked from an install directory
+# discovery_datatool init script and when symlinked from an install directory
 # like /opt/discovery_datatool-1.9/
 #
 ############################################################################
