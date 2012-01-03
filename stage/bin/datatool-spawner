@@ -108,8 +108,8 @@ fi
 LOGGING_ARGS="$(get_property jvm\\.logging)"
 if [ -z "$LOGGING_ARGS" ]; then
   LOGGING_PROPERTIES="$RELEASE_DIR"/logging.properties
-  if [ -f "$DISCOVERY_DIR"/logging.properties ]; then
-    LOGGING_PROPERTIES="$DISCOVERY_DIR"/logging.properties
+  if [ -f "$DATATOOL_DIR"/logging.properties ]; then
+    LOGGING_PROPERTIES="$DATATOOL_DIR"/logging.properties
   fi
   LOGGING_ARGS="-Djava.util.logging.config.file=$LOGGING_PROPERTIES"
   unset LOGGING_PROPERTIES
