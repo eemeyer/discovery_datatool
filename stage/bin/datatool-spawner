@@ -123,7 +123,6 @@ fi
 unset JVM_MEMORY
 
 
-datatool_bind_address=$(get_property bind_address)
 datatool_http_port=$(get_property http_port)
 datatool_bind_address=$(get_property bind_address)
 datatool_https_port=$(get_property https_port)
