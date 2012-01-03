@@ -132,7 +132,6 @@ datatool_keystore_pass=$(get_property keystore_pass)
 datatool_key_pass=$(get_property key_pass)
 datatool_truststore_file=$(get_property truststore_file)
 datatool_truststore_pass=$(get_property truststore_pass)
-datatool_logging_properties=$(get_property logging_properties)
 
 # Build command line arguments
 if [ -n "$datatool_bind_address" ]; then
